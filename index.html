@@ -1,169 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Aedemdem</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: Arial, sans-serif;
-      font-size: 16px; /* Ukuran teks awal */
-    }
-    
-    /* Header styling */
-    header {
-      background-color: #333;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-    }
-    
-    /* Navigation styling */
-    nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    nav ul {
-      list-style-type: none;
-      display: flex;
-    }
-    
-    nav ul li {
-      margin-right: 10px;
-    }
-    
-    nav ul li a {
-      color: #fff;
-      text-decoration: none;
-      padding: 5px;
-    }
-    
-    nav ul li a:hover {
-      background-color: #555;
-    }
-    
-    /* Bottom navigation styling */
-    .bottom-navigation {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background-color: #333;
-      color: #fff;
-      padding: 10px 0;
-      text-align: center;
-    }
-    
-    .bottom-navigation ul {
-      display: flex;
-    }
-    
-    .bottom-navigation ul li {
-      flex-grow: 1;
-    }
-    
-    .bottom-navigation ul li a {
-      display: block;
-      color: #fff;
-      text-decoration: none;
-      padding: 5px;
-    }
-    
-    .bottom-navigation ul li a:hover {
-      background-color: #555;
-    }
-    
-    /* Logo styling */
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-    
-    .logo img {
-      height: 40px;
-      margin-right: 10px;
-    }
-    
-    /* Section styling */
-    section {
-      background-color: #f5f5f5;
-      padding: 20px;
-      text-align: center;
-    }
-    
-    /* Footer styling */
-    footer {
-      background-color: #333;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-    }
-    
-    /* Responsive styles */
-    @media (max-width: 768px) {
-      header, section, footer {
-        padding: 10px;
-      }
-      
-      nav {
-        display: none;
-      }
-      
-      .bottom-navigation {
-        display: block;
-      }
-      
-      /* Ukuran teks pada perangkat mobile */
-      body {
-        font-size: 4vw; /* Atur ukuran teks relatif terhadap lebar viewport */
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Apps</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("nav ul li a").forEach(anchor => {
+                anchor.addEventListener("click", function (event) {
+                    event.preventDefault();
+                    const targetId = this.getAttribute("href").substring(1);
+                    document.getElementById(targetId).scrollIntoView({
+                        behavior: "smooth"
+                    });
+                });
+            });
+        });
+    </script>
 </head>
 <body>
-  <header>
     <nav>
-      <div class="logo">
-        <img src="assets/logo.png" alt="Logo">
-        <h1>Web Aedemdem</h1>
-      </div>
-      <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
+        <div class="container">
+            <h1 class="logo">Damsdev</h1>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#apps">Apps</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+        </div>
     </nav>
-  </header>
-  
-  <section>
-    <h2>Section</h2>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-  </section>
-  
-  <footer>
-    <p>Footer</p>
-  </footer>
-
-  <div class="bottom-navigation">
-    <ul>
-      <li><a href="#">Home</a></li>
-      <li><a href="#">About</a></li>
-      <li><a href="#">Services</a></li>
-      <li><a href="#">Contact</a></li>
-    </ul>
-  </div>
+    
+    <section id="home">
+        <div class="container home-content">
+            <div class="avatar">
+                <img src="images/cat.avif" alt="My Avatar">
+            </div>
+            <h1>Hello, I'm a Digital Product Designer</h1>
+            <p>Turning your idea into a modern and user-friendly product.</p>
+            <button class="cta-button">Contact Me</button>
+        </div>
+    </section>
+    
+    <section id="apps">
+        <div class="container">
+            <h2>Apps</h2>
+            <div class="app-list">
+                <a href="https://play.google.com/store/apps/developer?id=Damsdev&hl=id" class="card" target="_blank">
+                    <img src="https://logos-world.net/wp-content/uploads/2020/12/Google-Play-icon-logo-500x281.png" alt="App 1 Logo" class="app-logo">
+                    <h3>App 1</h3>
+                    <p>Revolutionary app that enhances productivity.</p>
+                </a>
+              
+            </div>
+        </div>
+    </section>
+    
+    
+    <section id="about">
+        <div class="container">
+            <h2>About This Page</h2>
+            <p>This page showcases my applications and their features.</p>
+    
+            <h3>Privacy Policy Apps</h3>
+            <div class="policy-list">
+                <a href="privacy1.html" class="policy-card">
+                    <img src="https://play-lh.googleusercontent.com/EUdjEAKi2JRKIARlmn5SbN3cETwdUACwcuJk5m7crAajQ8mhxdU8DdTpPjWqBROHZ_g=w480-h960-rw" alt="Security Icon" class="policy-icon">
+                    <div class="policy-content">
+                        <h4>E-Modul KPSP</h4>
+                        <p>E Modu Kuesioner Pra Skrining Perkembangan Berbasis Android</p>
+                    </div>
+                </a>
+                <a href="privacy2.html" class="policy-card">
+                    <img src="https://play-lh.googleusercontent.com/NGLtZ9VcbIVcIPzkCV2EJws2KGC-mfPjKp3-mnvOgv1ey1hwHSoelQD8APfh1SuT4_rU=w480-h960-rw" alt="Offline Icon" class="policy-icon">
+                    <div class="policy-content">
+                        <h>Modul Pola Asuh Anak</h4>
+                        <p>E-Modul Pola Asuh Anak Berbasis Android</p>
+                    </div>
+                </a>
+                <a href="pages/bication_privacy_policy.html" class="policy-card">
+                    <img src="https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=612x612&w=0&k=20&c=rnCKVbdxqkjlcs3xH87-9gocETqpspHFXu5dIGB4wuM=" alt="Offline Icon" class="policy-icon">
+                    <div class="policy-content">
+                        <h4>Bication</h4>
+                        <p>Body Image Identification</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Damsdev. All Rights Reserved.</p>
+            <div class="social-icons">
+                <!-- <a href="#"><img src="icon-twitter.svg" alt="Twitter"></a>
+                <a href="#"><img src="icon-linkedin.svg" alt="LinkedIn"></a> -->
+                <a href="#"><img src="https://docs.github.com/assets/cb-345/images/site/favicon.png" alt="GitHub"></a>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
