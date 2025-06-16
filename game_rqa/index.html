@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space Game</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            /* background-color: black; */
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+            user-select: none;
+            background-image: url('bg.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        canvas {
+            display: block;
+            /* background: linear-gradient(black, #111); */
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 1rem;
+            z-index: 10;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            z-index: 10;
+        }
+
+        .btn {
+            background: #ff69b4;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            color: white;
+            margin: 0 5px;
+            touch-action: manipulation;
+            display: inline-block;
+            white-space: nowrap;
+            line-height: 1.5;
+            width: 80%;
+        }
+
+        .btn2 {
+            background: #ff69b4;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            color: white;
+            margin: 0 5px;
+            touch-action: manipulation;
+            display: inline-block;
+            white-space: nowrap;
+            line-height: 1.5;
+        }
+
+        #awardScreen,
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 20;
+        }
+
+        #awardScreen.fade-in,
+        #gameOverScreen.fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        #awardImg,
+        #gameOverImg {
+            max-width: 80%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        #musicControls {
+            opacity: 0.4;
+            position: absolute;
+            top: 80px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 15;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="hud"></div>
+    <div id="controls">
+        <button id="leftBtn" class="btn">◀️</button>
+        <button id="rightBtn" class="btn">▶️</button>
+        <button id="fireBtn" class="btn">🔫</button>
+    </div>
+    <div id="musicControls">
+        <button class="btn" id="playPauseBtn">▶️</button>
+        <button class="btn" id="nextBtn">⏩</button>
+    </div>
+    <div id="awardScreen">
+        <img id="awardImg" src="" alt="Award" />
+        <h3 id="awardText"></h3>
+        <button class="btn2" onclick="continueGame()">Lanjut</button>
+    </div>
+    <div id="gameOverScreen">
+        <img id="gameOverImg" src="haha.webp" alt="Game Over" />
+        <p id="gameOverText">Game Over</p>
+        <button class="btn2" id="restartBtn">Main Ulang</button>
+    </div>
+    <button id="startBtn" class="btn"
+        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20;">Mulai
+        Game</button>
+    <audio id="bgMusic" src="bg.mp3" loop></audio>
+    <!--  -->
+    <audio id="sfxFire" src="fire.mp3"></audio>
+    <audio id="sfxGameOver" src="gameover.mp3"></audio>
+    <audio id="sfxLevelComplete" src="levelcomplete.mp3"></audio>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        //
+        const sfxFire = document.getElementById("sfxFire");
+        const sfxGameOver = document.getElementById("sfxGameOver");
+        const sfxLevelComplete = document.getElementById("sfxLevelComplete");
+
+        const playerImg = new Image();
+        playerImg.src = "player.png";
+        let player = { x: 0, y: 0, width: 50, height: 50, lives: 3 };
+        let bullets = [];
+        let enemies = [];
+        let score = 0;
+        let level = 1;
+        let isPaused = false;
+        //boss
+        let bossBullets = [];
+
+
+        const LEVEL_GOALS = [10, 20, 30, 40, 50, 60];
+
+        const enemyImgs = ["enemy1.png", "enemy2.png", "enemy3.png"].map(src => {
+            const img = new Image();
+            img.src = src;
+            return img;
+        });
+
+        function getRandomEnemyImage() {
+            return enemyImgs[Math.floor(Math.random() * enemyImgs.length)];
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            player.y = canvas.height - 150;
+            player.x = canvas.width / 2 - player.width / 2;
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        function drawPlayer() {
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+        }
+
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                ctx.drawImage(enemy.img, enemy.x, enemy.y, enemy.width, enemy.height);
+            });
+        }
+
+        function updateEnemies() {
+            enemies.forEach(enemy => {
+                enemy.y += 2;
+            });
+            enemies = enemies.filter(e => e.y < canvas.height);
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = "yellow";
+            bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 10));
+        }
+
+        function updateBullets() {
+            bullets.forEach(b => b.y -= 5);
+            bullets = bullets.filter(b => b.y > 0);
+        }
+
+        function spawnEnemy() {
+            const x = Math.random() * (canvas.width - 50);
+            const img = getRandomEnemyImage();
+            enemies.push({ x, y: -50, width: 50, height: 50, img });
+        }
+
+        function checkCollisions() {
+            bullets.forEach((b, bi) => {
+                enemies.forEach((e, ei) => {
+                    if (b.x > e.x && b.x < e.x + e.width && b.y > e.y && b.y < e.y + e.height) {
+                        bullets.splice(bi, 1);
+                        enemies.splice(ei, 1);
+                        score++;
+                    }
+                });
+            });
+
+            enemies.forEach((e, ei) => {
+                if (e.x < player.x + player.width &&
+                    e.x + e.width > player.x &&
+                    e.y < player.y + player.height &&
+                    e.y + e.height > player.y) {
+                    player.lives--;
+                    enemies.splice(ei, 1);
+                    if (player.lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+
+            checkBossCollision(bullets);
+        }
+
+        function drawHUD() {
+            document.getElementById("hud").innerHTML =
+                `❤️ ${player.lives} | ⭐ Skor: ${score} | 🔺 Level: ${level}`;
+        }
+
+        function gameOver() {
+            isPaused = true;
+            clearInterval(enemyInterval);
+            document.getElementById("gameOverScreen").style.display = "flex";
+            sfxGameOver.play();
+        }
+
+        const pesanUlangTahun = [
+            "Umur boleh nambah, tapi semangat tetap muda dong.",
+            "Semoga rezeki lancar, hati tenang, hidup enak.",
+            "Jangan lupa jeda, nikmati proses dan pencapaianmu.",
+            "Tahun baru, versi kamu yang lebih chill.",
+            "Nikmati hari ini, traktir diri sendiri juga boleh dong.",
+            "Selamat Ulang Tahun yang ke 24 Rifa! Jangan lupa bahagia, sisanya bonus. ❤️"
+        ];
+
+        function showAward() {
+            isPaused = true;
+            clearInterval(enemyInterval);
+            const awardScreen = document.getElementById("awardScreen");
+            awardScreen.classList.add("fade-in");
+            awardScreen.style.display = "flex";
+            // document.getElementById("awardImg").src = `reward${level}.png`;
+            document.getElementById("awardImg").src = `reward.webp`;
+            document.getElementById("awardText").innerText = `Level ${level} ok\n\n "${pesanUlangTahun[level-1]}"`;
+            sfxLevelComplete.play();
+        }
+
+        function continueGame() {
+            document.getElementById("awardScreen").style.display = "none";
+            isPaused = false;
+            level++;
+            if (level === 6) spawnBoss();
+            enemyInterval = setInterval(spawnEnemy, 1000);
+        }
+
+        document.getElementById("leftBtn").addEventListener("touchstart", () => {
+            player.x = Math.max(0, player.x - 30);
+        });
+
+        document.getElementById("rightBtn").addEventListener("touchstart", () => {
+            player.x = Math.min(canvas.width - player.width, player.x + 30);
+        });
+
+        document.getElementById("fireBtn").addEventListener("touchstart", () => {
+            bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y });
+            sfxFire.play();
+        });
+
+        document.getElementById("restartBtn").addEventListener("click", () => {
+            location.reload();
+        });
+
+        let enemyInterval;
+
+        //boss
+        function bossShoot() {
+            if (boss) {
+                bossBullets.push({
+                    x: boss.x + boss.width / 2 - 3,
+                    y: boss.y + boss.height,
+                    width: 6,
+                    height: 15,
+                    speed: 5,
+                });
+            }
+
+            // Jadwal tembakan berikutnya acak 1–3 detik
+            const nextShotIn = 1000 + Math.random() * 2000;
+            setTimeout(bossShoot, nextShotIn);
+        }
+
+        //
+
+        function startGame() {
+            enemyInterval = setInterval(spawnEnemy, 1000);
+            function loop() {
+                if (!isPaused) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawPlayer();
+                    drawEnemies();
+                    updateEnemies();
+                    drawBullets();
+                    updateBullets();
+                    checkCollisions();
+                    drawHUD();
+                    updateBoss();
+                    drawBoss(ctx);
+                    if (score >= LEVEL_GOALS[level - 1] && !boss) {
+                        showAward();
+                    }
+                    drawBossBullets();
+                    updateBossBullets();
+                    checkBossBulletHit();
+
+                }
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const bgMusic = document.getElementById("bgMusic");
+        const startBtn = document.getElementById("startBtn");
+
+        playPauseBtn.addEventListener("click", () => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                playPauseBtn.innerText = "⏸️";
+            } else {
+                bgMusic.pause();
+                playPauseBtn.innerText = "▶️";
+            }
+        });
+
+        nextBtn.addEventListener("click", () => {
+            bgMusic.currentTime = Math.min(bgMusic.duration, bgMusic.currentTime + 20);
+        });
+
+        startBtn.addEventListener("click", () => {
+            startBtn.style.display = 'none';
+            bgMusic.play();
+            playPauseBtn.innerText = "⏸️";
+            if (typeof startGame === 'function') startGame();
+        });
+
+        // 👾 Tambahan: Boss muncul di level tertentu
+        let boss = null;
+        let bossHealth = 0;
+        let bossDirection = 1;
+
+        function spawnBoss() {
+            boss = {
+                x: window.innerWidth / 2 - 75,
+                y: 50,
+                width: 150,
+                height: 150,
+                img: new Image(),
+            };
+            boss.img.src = "boss.png";
+            bossHealth = 35;
+
+            // Mulai menembak
+            bossShoot();
+        }
+
+
+        function drawBoss(ctx) {
+            if (boss) {
+                ctx.drawImage(boss.img, boss.x, boss.y, boss.width, boss.height);
+                ctx.fillStyle = "red";
+                ctx.fillRect(boss.x, boss.y - 10, boss.width * (bossHealth / 10), 5);
+            }
+        }
+
+        function updateBoss() {
+            if (boss) {
+                boss.x += bossDirection * 2;
+                if (boss.x <= 0 || boss.x + boss.width >= window.innerWidth) bossDirection *= -1;
+            }
+        }
+
+        function checkBossCollision(bullets) {
+            if (!boss) return;
+            bullets.forEach((b, bi) => {
+                if (
+                    b.x > boss.x &&
+                    b.x < boss.x + boss.width &&
+                    b.y > boss.y &&
+                    b.y < boss.y + boss.height
+                ) {
+                    bossHealth--;
+                    bullets.splice(bi, 1);
+                    if (bossHealth <= 0) {
+                        boss = null;
+                        window.location.href = "levelcomplete.html";
+                        // location.reload();
+                    }
+                }
+            });
+        }
+        function updateBossBullets() {
+            bossBullets.forEach(b => b.y += b.speed);
+            bossBullets = bossBullets.filter(b => b.y < canvas.height);
+        }
+
+        function drawBossBullets() {
+            ctx.fillStyle = "red";
+            bossBullets.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+        }
+        function checkBossBulletHit() {
+            bossBullets.forEach((b, i) => {
+                if (
+                    b.x < player.x + player.width &&
+                    b.x + b.width > player.x &&
+                    b.y < player.y + player.height &&
+                    b.y + b.height > player.y
+                ) {
+                    bossBullets.splice(i, 1);
+                    player.lives--;
+                    if (player.lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+        }
+
+
+
+        window.drawBoss = drawBoss;
+        window.updateBoss = updateBoss;
+        window.checkBossCollision = checkBossCollision;
+        window.spawnBoss = spawnBoss;
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space Game</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+            background: linear-gradient(black, #111);
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 1rem;
+            z-index: 10;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            z-index: 10;
+        }
+
+        .btn {
+            background: #ff69b4;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            color: white;
+            margin: 0 5px;
+            touch-action: manipulation;
+            display: inline-block;
+            white-space: nowrap;
+            line-height: 1.5;
+        }
+
+        #awardScreen,
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 20;
+        }
+
+        #awardScreen.fade-in,
+        #gameOverScreen.fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        #awardImg,
+        #gameOverImg {
+            max-width: 80%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        #musicControls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 15;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="hud"></div>
+    <div id="controls">
+        <button id="leftBtn" class="btn">◀️</button>
+        <button id="fireBtn" class="btn">🔫</button>
+        <button id="rightBtn" class="btn">▶️</button>
+    </div>
+    <div id="musicControls">
+        <button class="btn" id="playPauseBtn">▶️</button>
+        <button class="btn" id="nextBtn">⏩ +20s</button>
+    </div>
+    <div id="awardScreen">
+        <img id="awardImg" src="" alt="Award" />
+        <p id="awardText"></p>
+        <button class="btn" onclick="continueGame()">Lanjut</button>
+    </div>
+    <div id="gameOverScreen">
+        <img id="gameOverImg" src="enemy1.png" alt="Game Over" />
+        <p id="gameOverText">Game Over</p>
+        <button class="btn" id="restartBtn">Main Ulang</button>
+    </div>
+    <button id="startBtn" class="btn"
+        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20;">Mulai
+        Game</button>
+    <audio id="bgMusic" src="bg.mp3" loop></audio>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const playerImg = new Image();
+        playerImg.src = "player.png";
+        let player = { x: 0, y: 0, width: 50, height: 50, lives: 3 };
+        let bullets = [];
+        let enemies = [];
+        let score = 0;
+        let level = 1;
+        let isPaused = false;
+        //boss
+        let bossBullets = [];
+
+
+        const LEVEL_GOALS = [2, 4, 6, 8, 10, 12];
+
+        const enemyImgs = ["enemy1.png", "enemy2.png", "enemy3.png"].map(src => {
+            const img = new Image();
+            img.src = src;
+            return img;
+        });
+
+        function getRandomEnemyImage() {
+            return enemyImgs[Math.floor(Math.random() * enemyImgs.length)];
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            player.y = canvas.height - 100;
+            player.x = canvas.width / 2 - player.width / 2;
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        function drawPlayer() {
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+        }
+
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                ctx.drawImage(enemy.img, enemy.x, enemy.y, enemy.width, enemy.height);
+            });
+        }
+
+        function updateEnemies() {
+            enemies.forEach(enemy => {
+                enemy.y += 2;
+            });
+            enemies = enemies.filter(e => e.y < canvas.height);
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = "yellow";
+            bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 10));
+        }
+
+        function updateBullets() {
+            bullets.forEach(b => b.y -= 5);
+            bullets = bullets.filter(b => b.y > 0);
+        }
+
+        function spawnEnemy() {
+            const x = Math.random() * (canvas.width - 50);
+            const img = getRandomEnemyImage();
+            enemies.push({ x, y: -50, width: 50, height: 50, img });
+        }
+
+        function checkCollisions() {
+            bullets.forEach((b, bi) => {
+                enemies.forEach((e, ei) => {
+                    if (b.x > e.x && b.x < e.x + e.width && b.y > e.y && b.y < e.y + e.height) {
+                        bullets.splice(bi, 1);
+                        enemies.splice(ei, 1);
+                        score++;
+                    }
+                });
+            });
+
+            enemies.forEach((e, ei) => {
+                if (e.x < player.x + player.width &&
+                    e.x + e.width > player.x &&
+                    e.y < player.y + player.height &&
+                    e.y + e.height > player.y) {
+                    player.lives--;
+                    enemies.splice(ei, 1);
+                    if (player.lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+
+            checkBossCollision(bullets);
+        }
+
+        function drawHUD() {
+            document.getElementById("hud").innerHTML =
+                `❤️ ${player.lives} | ⭐ Skor: ${score} | 🔺 Level: ${level}`;
+        }
+
+        function gameOver() {
+            isPaused = true;
+            clearInterval(enemyInterval);
+            document.getElementById("gameOverScreen").style.display = "flex";
+        }
+
+        function showAward() {
+            isPaused = true;
+            clearInterval(enemyInterval);
+            const awardScreen = document.getElementById("awardScreen");
+            awardScreen.classList.add("fade-in");
+            awardScreen.style.display = "flex";
+            document.getElementById("awardImg").src = `reward${level}.png`;
+            document.getElementById("awardText").innerText = `Selamat! Kamu menyelesaikan level ${level}!`;
+        }
+
+        function continueGame() {
+            document.getElementById("awardScreen").style.display = "none";
+            isPaused = false;
+            level++;
+            if (level === 6) spawnBoss();
+            enemyInterval = setInterval(spawnEnemy, 1000);
+        }
+
+        document.getElementById("leftBtn").addEventListener("touchstart", () => {
+            player.x = Math.max(0, player.x - 30);
+        });
+
+        document.getElementById("rightBtn").addEventListener("touchstart", () => {
+            player.x = Math.min(canvas.width - player.width, player.x + 30);
+        });
+
+        document.getElementById("fireBtn").addEventListener("touchstart", () => {
+            bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y });
+        });
+
+        document.getElementById("restartBtn").addEventListener("click", () => {
+            location.reload();
+        });
+
+        let enemyInterval;
+
+        //boss
+        function bossShoot() {
+            if (boss) {
+                bossBullets.push({
+                    x: boss.x + boss.width / 2 - 3,
+                    y: boss.y + boss.height,
+                    width: 6,
+                    height: 15,
+                    speed: 5,
+                });
+            }
+
+            // Jadwal tembakan berikutnya acak 1–3 detik
+            const nextShotIn = 1000 + Math.random() * 2000;
+            setTimeout(bossShoot, nextShotIn);
+        }
+
+        //
+
+        function startGame() {
+            enemyInterval = setInterval(spawnEnemy, 1000);
+            function loop() {
+                if (!isPaused) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawPlayer();
+                    drawEnemies();
+                    updateEnemies();
+                    drawBullets();
+                    updateBullets();
+                    checkCollisions();
+                    drawHUD();
+                    updateBoss();
+                    drawBoss(ctx);
+                    if (score >= LEVEL_GOALS[level - 1] && !boss) {
+                        showAward();
+                    }
+                    drawBossBullets();
+                    updateBossBullets();
+                    checkBossBulletHit();
+
+                }
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const bgMusic = document.getElementById("bgMusic");
+        const startBtn = document.getElementById("startBtn");
+
+        playPauseBtn.addEventListener("click", () => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                playPauseBtn.innerText = "⏸️";
+            } else {
+                bgMusic.pause();
+                playPauseBtn.innerText = "▶️";
+            }
+        });
+
+        nextBtn.addEventListener("click", () => {
+            bgMusic.currentTime = Math.min(bgMusic.duration, bgMusic.currentTime + 20);
+        });
+
+        startBtn.addEventListener("click", () => {
+            startBtn.style.display = 'none';
+            bgMusic.play();
+            playPauseBtn.innerText = "⏸️";
+            if (typeof startGame === 'function') startGame();
+        });
+
+        // 👾 Tambahan: Boss muncul di level tertentu
+        let boss = null;
+        let bossHealth = 0;
+        let bossDirection = 1;
+
+        function spawnBoss() {
+            boss = {
+                x: window.innerWidth / 2 - 75,
+                y: 50,
+                width: 150,
+                height: 150,
+                img: new Image(),
+            };
+            boss.img.src = "boss.png";
+            bossHealth = 10;
+
+            // Mulai menembak
+            bossShoot();
+        }
+
+
+        function drawBoss(ctx) {
+            if (boss) {
+                ctx.drawImage(boss.img, boss.x, boss.y, boss.width, boss.height);
+                ctx.fillStyle = "red";
+                ctx.fillRect(boss.x, boss.y - 10, boss.width * (bossHealth / 10), 5);
+            }
+        }
+
+        function updateBoss() {
+            if (boss) {
+                boss.x += bossDirection * 2;
+                if (boss.x <= 0 || boss.x + boss.width >= window.innerWidth) bossDirection *= -1;
+            }
+        }
+
+        function checkBossCollision(bullets) {
+            if (!boss) return;
+            bullets.forEach((b, bi) => {
+                if (
+                    b.x > boss.x &&
+                    b.x < boss.x + boss.width &&
+                    b.y > boss.y &&
+                    b.y < boss.y + boss.height
+                ) {
+                    bossHealth--;
+                    bullets.splice(bi, 1);
+                    if (bossHealth <= 0) {
+                        boss = null;
+                        alert("Kamu mengalahkan Boss! Kamu Menang!");
+                        location.reload();
+                    }
+                }
+            });
+        }
+        function updateBossBullets() {
+            bossBullets.forEach(b => b.y += b.speed);
+            bossBullets = bossBullets.filter(b => b.y < canvas.height);
+        }
+
+        function drawBossBullets() {
+            ctx.fillStyle = "red";
+            bossBullets.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+        }
+        function checkBossBulletHit() {
+            bossBullets.forEach((b, i) => {
+                if (
+                    b.x < player.x + player.width &&
+                    b.x + b.width > player.x &&
+                    b.y < player.y + player.height &&
+                    b.y + b.height > player.y
+                ) {
+                    bossBullets.splice(i, 1);
+                    player.lives--;
+                    if (player.lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+        }
+
+
+
+        window.drawBoss = drawBoss;
+        window.updateBoss = updateBoss;
+        window.checkBossCollision = checkBossCollision;
+        window.spawnBoss = spawnBoss;
+    </script>
+</body>
+
+</html> -->
+
+
+
+
+
+<!----------------------------------------------------------------------------------- PART 2 -->
+<!-- ======================================================================================= -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space Game</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+            background: linear-gradient(black, #111);
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 1rem;
+            z-index: 10;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            z-index: 10;
+        }
+
+        .btn {
+            background: #ff69b4;
+            border: none;
+            padding: 2px 0;
+            /* vertikal saja agar tinggi sesuai teks */
+            border-radius: 10px;
+            font-size: 1.2rem;
+            color: white;
+            margin: 0 5px;
+            touch-action: manipulation;
+            line-height: 1.5;
+            width: 90%;
+            max-width: 90%;
+            flex: 1;
+        }
+
+        .bodyBg {
+            background-image: url('bg.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        .btn2 {
+            background: #ff69b4;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            color: white;
+            margin: 0 5px;
+            touch-action: manipulation;
+            display: inline-block;
+            white-space: nowrap;
+            line-height: 1.5;
+        }
+
+        #awardScreen,
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 20;
+        }
+
+        #awardScreen.fade-in,
+        #gameOverScreen.fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        #awardImg,
+        #gameOverImg {
+            max-width: 80%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gameCanvas" class="bodyBg"></canvas>
+    <div id="hud"></div>
+    <div id="controls">
+        <button id="leftBtn" class="btn">◀️</button>
+        <button id="rightBtn" class="btn">▶️</button>
+        <button id="fireBtn" class="btn">🔫</button>
+
+    </div>
+
+    <div id="awardScreen">
+        <img id="awardImg" src="" alt="Award" />
+        <p id="awardText"></p>
+        <button class="btn2" onclick="continueGame()">Lanjut</button>
+
+    </div>
+
+    <div id="gameOverScreen">
+        <img id="gameOverImg" src="enemy1.png" alt="Game Over" />
+        <p id="gameOverText">Game Over</p>
+        <button class="btn2" id="restartBtn">Ulangi</button>
+    </div>
+
+    <button id="startBtn" class="btn"
+        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20;">Mulai
+        Game</button>
+
+    <audio id="bgMusic" src="bg.mp3" autoplay loop></audio>
+    <audio id="bgMusic" src="bg.mp3" loop></audio>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // ini edit
+        // const LEVEL_GOALS = [10, 25, 40, 60, 90, 120];
+        const LEVEL_GOALS = [2, 4, 6, 8, 10, 12];
+        const PLAYER_SPEED = 5;
+
+        let player = { x: 0, y: 0, width: 50, height: 50, lives: 3 };
+        let score = 0;
+        let level = 1;
+        let enemies = [];
+        let bullets = [];
+        let isPaused = false;
+        let gameStarted = false;
+        let enemySpawnInterval;
+
+        const playerImg = new Image();
+        playerImg.src = "player.png";
+        const enemyImgs = ["enemy1.png", "enemy2.png", "enemy3.png"].map(src => {
+            const img = new Image();
+            img.src = src;
+            return img;
+        });
+
+        function getRandomEnemyImage() {
+            return enemyImgs[Math.floor(Math.random() * enemyImgs.length)];
+        }
+
+        const awardScreen = document.getElementById("awardScreen");
+        const gameOverScreen = document.getElementById("gameOverScreen");
+        const gameOverText = document.getElementById("gameOverText");
+        const restartBtn = document.getElementById("restartBtn");
+
+        document.getElementById("startBtn").addEventListener("click", () => {
+            gameStarted = true;
+            document.getElementById("startBtn").style.display = "none";
+            resetGame();
+            startGame();
+        });
+
+        restartBtn.addEventListener("click", () => {
+            resetGame();
+            gameOverScreen.style.display = "none";
+        });
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            player.y = canvas.height - 100;
+            player.x = canvas.width / 2 - player.width / 2;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function drawPlayer() {
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+        }
+
+        function drawHUD() {
+            document.getElementById("hud").innerHTML = `❤️ ${player.lives} | ⭐ Skor: ${score} | 🔺 Level: ${level}`;
+        }
+
+        function spawnEnemy() {
+            const x = Math.random() * (canvas.width - 50);
+            const img = getRandomEnemyImage();
+            enemies.push({ x, y: -50, width: 50, height: 50, speed: 2, img });
+        }
+
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                ctx.drawImage(enemy.img, enemy.x, enemy.y, enemy.width, enemy.height);
+            });
+        }
+
+        function updateEnemies() {
+            enemies.forEach(enemy => {
+                enemy.y += enemy.speed;
+            });
+            enemies = enemies.filter(e => e.y < canvas.height);
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = "yellow";
+            bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 10));
+        }
+
+        function updateBullets() {
+            bullets.forEach(b => b.y -= 5);
+            bullets = bullets.filter(b => b.y > 0);
+        }
+
+        function checkCollisions() {
+            bullets.forEach((b, bi) => {
+                enemies.forEach((e, ei) => {
+                    if (b.x > e.x && b.x < e.x + e.width && b.y > e.y && b.y < e.y + e.height) {
+                        score++;
+                        bullets.splice(bi, 1);
+                        enemies.splice(ei, 1);
+                    }
+                });
+            });
+
+            enemies.forEach((e, ei) => {
+                if (e.x < player.x + player.width && e.x + e.width > player.x && e.y < player.y + player.height && e.y + e.height > player.y) {
+                    player.lives--;
+                    enemies.splice(ei, 1);
+                    if (player.lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+        }
+
+        function gameOver() {
+            isPaused = true;
+            clearInterval(enemySpawnInterval);
+            gameOverScreen.style.display = "flex";
+        }
+
+        function showAward() {
+            isPaused = true;
+            clearInterval(enemySpawnInterval);
+            awardScreen.classList.add("fade-in");
+            awardScreen.style.display = "flex";
+            const rewardImage = level < 6 ? `reward${level}.png` : "reward6.png";
+            document.getElementById("awardImg").src = rewardImage;
+            document.getElementById("awardText").innerText = `Selamat! Kamu menyelesaikan level ${level}!`;
+        }
+
+        function continueGame() {
+            awardScreen.style.display = "none";
+            isPaused = false;
+            level++;
+            if (level > LEVEL_GOALS.length) {
+                gameOverText.innerText = "Kamu Menyelesaikan Semua Level!";
+                gameOverScreen.style.display = "flex";
+                return;
+            }
+            enemySpawnInterval = setInterval(spawnEnemy, 1000);
+        }
+
+        function resetGame() {
+            score = 0;
+            level = 1;
+            player.lives = 3;
+            enemies = [];
+            bullets = [];
+            isPaused = false;
+            resizeCanvas();
+            enemySpawnInterval = setInterval(spawnEnemy, 1000);
+        }
+
+        document.getElementById("leftBtn").addEventListener("touchstart", () => player.x = Math.max(0, player.x - PLAYER_SPEED * 10));
+        document.getElementById("rightBtn").addEventListener("touchstart", () => player.x = Math.min(canvas.width - player.width, player.x + PLAYER_SPEED * 10));
+        document.getElementById("fireBtn").addEventListener("touchstart", () => bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y }));
+
+        function startGame() {
+            enemySpawnInterval = setInterval(spawnEnemy, 1000);
+            function loop() {
+                if (!isPaused && gameStarted) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawPlayer();
+                    drawEnemies();
+                    drawBullets();
+                    drawHUD();
+                    updateEnemies();
+                    updateBullets();
+                    checkCollisions();
+
+                    if (score >= LEVEL_GOALS[level - 1]) {
+                        showAward();
+                    }
+                }
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+    </script>
+</body>
+
+</html>
+ -->
