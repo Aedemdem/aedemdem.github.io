@@ -175,7 +175,7 @@
         let bossBullets = [];
 
 
-        const LEVEL_GOALS = [10, 20, 30, 40, 50, 60];
+        const LEVEL_GOALS = [15, 30, 45, 60, 75, 90];
 
         const enemyImgs = ["enemy1.png", "enemy2.png", "enemy3.png"].map(src => {
             const img = new Image();
@@ -403,7 +403,7 @@
                 img: new Image(),
             };
             boss.img.src = "boss.png";
-            bossHealth = 35;
+            bossHealth = 60;
 
             // Mulai menembak
             bossShoot();
