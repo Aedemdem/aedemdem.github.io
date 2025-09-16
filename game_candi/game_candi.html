@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Malin Membangun Candi — Edisi Gaib</title>
+    <style>
+        :root{
+            --muted:#9fb0c8;
+            --accent:#ffb86b;
+            --gold: #ffd700;
+            --ui-bg: rgba(2,6,15,0.66);
+            --bubble-left:#0b2332;
+            --bubble-right:#122226;
+            --safe-bottom: env(safe-area-inset-bottom, 12px);
+        }
+
+        html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#031229,#04182a);color:#eaf3ff; overflow: hidden;}
+        .app{height:100vh;max-width:520px;margin:0 auto;display:flex;flex-direction:column;position:relative}
+        header{padding:12px 14px;z-index: 10;}
+        h1{font-size:16px;margin:0}
+        
+        .canvas-wrap{flex:1;position:relative;background:linear-gradient(180deg,#02283a,#031023);overflow:auto}
+        canvas{display:block;width:100%;height:auto; position: absolute; top:0; left:0;}
+
+        .hud{position:sticky;top:8px;left:8px;background:var(--ui-bg);backdrop-filter:blur(6px);padding:8px;border-radius:10px;font-size:13px;z-index:8;margin:8px;width:calc(100% - 32px)}
+        .hud-text { margin-bottom: 5px; }
+        .progress-bar-container { background-color: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background-color: var(--accent); transition: width 0.3s ease-out; }
+
+        #powerupBtn {
+            position: fixed;
+            bottom: calc(70px + var(--safe-bottom));
+            right: 16px;
+            z-index: 40;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(145deg, var(--accent), #ff974f);
+            color: #101018;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform .2s ease, opacity .3s ease;
+            transform: scale(0);
+            opacity: 0;
+        }
+        #powerupBtn.visible { transform: scale(1); opacity: 1; }
+        #powerupBtn:disabled { background: #5a687a; cursor: not-allowed; }
+        #powerupBtn .cooldown-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2,6,15,0.7);
+            clip-path: inset(100% 0 0 0);
+            transition: clip-path 0.2s linear;
+        }
+
+        .dialogue{ position:absolute; left:0; right:0; bottom:calc(86px + var(--safe-bottom)); pointer-events:none; z-index:20; display:none; padding:0 8px }
+        .dlg-row{ display:flex; gap:8px; align-items:flex-end; margin-bottom:8px; }
+        .dlg-left{ justify-content:flex-start; }
+        .dlg-right{ justify-content:flex-end; flex-direction:row-reverse; }
+        
+        .speaker{ width:80px; height:80px; border-radius:8px; overflow:hidden; flex:0 0 80px; background:linear-gradient(180deg,#20303a,#122227); box-shadow:0 6px 18px rgba(0,0,0,0.5); background-size: cover; background-position: center; border: 1px solid rgba(255,255,255,0.05); }
+        .speaker.speaker-a { background-image: url('asset/avatar_a.png'); }
+        .speaker.speaker-b { background-image: url('asset/avatar_b.png'); }
+
+        .bubble{ max-width:70%; padding:10px 12px; border-radius:12px; font-size:15px; color:#eaf3ff; box-shadow:0 10px 30px rgba(0,0,0,0.45); opacity:0; transform:translateY(8px); transition:opacity .36s ease, transform .36s ease; }
+        .bubble.show{ opacity:1; transform:translateY(0) }
+        .bubble.left{ background:var(--bubble-left) }
+        .bubble.right{ background:var(--bubble-right); }
+
+        .controls{ position:fixed; left:0; right:0; bottom:0; display:flex; gap:8px; align-items:center; justify-content:space-between; padding:10px; background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.14)); z-index:30; box-sizing:border-box }
+        .controls label{ font-size:13px; color:var(--muted); display:flex; gap:6px; align-items:center }
+        .input-count{ width:110px; padding:9px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit; font-size:15px; }
+        .btn{ padding:10px 14px; border-radius:10px; border:none; background:linear-gradient(180deg,var(--accent),#ff974f); color:#101018; font-weight:700; font-size:15px; min-width:88px; cursor:pointer; transition: opacity .2s ease; }
+        .btn:disabled { cursor: not-allowed; opacity: 0.6; }
+        .btn.secondary{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted) }
+        .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted) }
+        .compact-controls{ display:none; gap:8px; align-items:center }
+
+        @media (max-width:420px){ .speaker{ width:72px; height:72px; } .bubble{ font-size:14px } .btn{ font-size:14px; padding:9px 12px; min-width:72px } #powerupBtn { width: 52px; height: 52px; font-size: 22px; } }
+    </style>
+</head>
+<body>
+    <div class="app" role="application">
+        <header>
+            <h1>😭😭😭 Membangun Candi</h1>
+        </header>
+
+        <div class="canvas-wrap" id="canvasWrap">
+            <div id="hud" class="hud">
+                <div id="hudText" class="hud-text">Status: Siap</div>
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+            </div>
+            <canvas id="stage" aria-label="Area permainan"></canvas>
+            <div class="dialogue" id="dialogueRoot" aria-hidden="true"></div>
+        </div>
+
+        <button id="powerupBtn" aria-label="Gunakan Kekuatan Gaib">💗
+            <div class="cooldown-overlay"></div>
+        </button>
+
+        <div class="controls" id="controlsBar">
+            <div class="left">
+                <label for="count">Jumlah candi
+                    <input id="count" class="input-count" type="number" min="10" max="1001" value="10" />
+                </label>
+            </div>
+            <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                <button id="startBtn" class="btn">Mulai</button>
+                <div class="compact-controls" id="compactControls">
+                    <button id="pauseBtn" class="btn secondary">Pause</button>
+                    <button id="stopBtn" class="btn ghost">Stop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="bgAudio" src="asset/bg-music.mp3" loop preload="auto" playsinline></audio>
+    <audio id="roosterAudio" src="asset/rooster.mp3" preload="auto" playsinline></audio>
+    <audio id="powerupAudio" src="asset/powerup.mp3" preload="auto" playsinline></audio>
+    <audio id="blockAudio" src="asset/block_place.mp3" preload="auto" playsinline></audio>
+
+    <script>
+    (function() {
+        'use strict';
+        
+        /* -------- Utils -------- */
+        const $ = (selector) => document.querySelector(selector);
+        const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+        const hexToRgb = (h) => { const s=h.replace("#",""); return { r: parseInt(s.slice(0,2),16), g: parseInt(s.slice(2,4),16), b: parseInt(s.slice(4,6),16) }; };
+        const mixRgb = (a,b,t) => ({ r: Math.round(a.r*(1-t)+b.r*t), g: Math.round(a.g*(1-t)+b.g*t), b: Math.round(a.b*(1-t)+b.b*t) });
+        const rgbToCss = (o) => `rgb(${o.r},${o.g},${o.b})`;
+        const ease = (t) => 0.5 - 0.5*Math.cos(Math.PI*t);
+        const lerp = (a,b,t) => a + (b-a)*t;
+        const vibrate = (pattern) => { if (navigator.vibrate) navigator.vibrate(pattern); };
+
+        /* -------- DOM Elements -------- */
+        const container = $('#canvasWrap'), canvas = $('#stage'), ctx = canvas.getContext('2d', { alpha:true });
+        const hudText = $('#hudText'), progressBar = $('#progressBar'), dialogueRoot = $('#dialogueRoot');
+        const startBtn = $('#startBtn'), pauseBtn = $('#pauseBtn'), stopBtn = $('#stopBtn'), countInput = $('#count'), compactControls = $('#compactControls');
+        const bgAudio = $('#bgAudio'), roosterAudio = $('#roosterAudio'), powerupAudio = $('#powerupAudio'), blockAudio = $('#blockAudio');
+        const powerupBtn = $('#powerupBtn'), powerupCooldownOverlay = $('#powerupBtn .cooldown-overlay');
+
+        // --- FIX: Re-declared DPR in the correct scope ---
+        let DPR = Math.max(1, window.devicePixelRatio || 1);
+
+        /* -------- Game State -------- */
+        let gameState = 'idle';
+        let totalTemples = 10, templeVariants = [], templeTypes = [], templeBlockCounts = [], cumulativeBlocks = [], snapshots = [];
+        let totalBlocks = 0, lastBlocks = [], templeCompleted = [], templeCompletedCount = 0;
+        let startTime = 0, pausedAccum = 0, pauseStart = 0, buildDuration = 0, lastFrameTime = 0, powerupBonusTime = 0;
+        let raflId = null;
+
+        /* -------- Environment State -------- */
+        let envAssets = { bukit: null, awan1: null, awan2: null };
+        let clouds = [], hillsY = 0;
+        function loadImage(src) { return new Promise((resolve, reject) => { const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src; }); }
+        
+        /* -------- Power-up State -------- */
+        const POWERUP_DURATION = 5000;
+        const POWERUP_COOLDOWN = 15000;
+        let powerupActiveUntil = 0;
+        let powerupReady = true;
+
+        /* -------- Temple/Drawing Logic -------- */
+        function makeTemplePlan(blockSize, variant) {
+             const plans = [
+                [{n:4,l:0},{n:3,l:1},{n:2,l:2},{n:1,l:3}],
+                [{n:5,l:0},{n:3,l:1},{n:2,l:2},{n:1,l:3}],
+                [{n:3,l:0},{n:3,l:1},{n:2,l:2},{n:1,l:3},{n:1,l:4}],
+                [{n:4,l:0},{n:4,l:1},{n:2,l:2},{n:1,l:3}],
+                [{n:5,l:0},{n:1,l:1},{n:5,l:2},{n:1,l:3}],
+            ];
+            const plan = [];
+            (plans[variant] || plans[0]).forEach(L => {
+                const n = L.n, lvl = L.l, off = -(n-1)*blockSize/2;
+                for (let i=0;i<n;i++) for (let j=0;j<n;j++) plan.push({ x: off + j*blockSize, z: off + i*blockSize, level: lvl });
+            });
+            return plan;
+        }
+
+        const templeColors = {
+            normal: { top: "#e6c48a", side: "#c28f4f", shade: "#915f2f" },
+            gold:   { top: "#fffaab", side: "#ffd700", shade: "#b8860b" }
+        };
+
+        function createTempleSnapshot(tileW, variant, type) {
+            const s = Math.max(28, tileW);
+            const off = document.createElement('canvas');
+            off.width = Math.floor(s * DPR); off.height = Math.floor(s * DPR);
+            const oc = off.getContext('2d');
+            oc.setTransform(DPR, 0, 0, DPR, 0, 0);
+            
+            const cx = s/2, cy = s/2 + 6;
+            const block = Math.max(6, Math.floor(s * 0.22));
+            const plan = makeTemplePlan(block, variant);
+            plan.sort((a,b)=>(a.level - b.level) || (a.z - b.z));
+            const colors = templeColors[type] || templeColors.normal;
+            
+            for (let p of plan) {
+                const sx = cx + p.x, sy = cy + p.z*0.45 - p.level*(block*0.9);
+                const h = Math.max(2, Math.floor(block*0.34));
+                oc.beginPath(); oc.moveTo(sx, sy - h); oc.lineTo(sx + block/2, sy - h/2); oc.lineTo(sx, sy); oc.closePath(); oc.fillStyle = colors.top; oc.fill();
+                oc.beginPath(); oc.moveTo(sx - block/2, sy - h/2); oc.lineTo(sx, sy); oc.lineTo(sx - block/2, sy + block); oc.closePath(); oc.fillStyle = colors.side; oc.fill();
+                oc.beginPath(); oc.moveTo(sx + block/2, sy - h/2); oc.lineTo(sx, sy); oc.lineTo(sx + block/2, sy + block); oc.closePath(); oc.fillStyle = colors.shade; oc.fill();
+            }
+            return off;
+        }
+
+        function drawCube(x,y,s,colors) {
+            const h = Math.max(2, Math.floor(s*0.34));
+            ctx.save(); ctx.translate(x,y);
+            ctx.beginPath(); ctx.moveTo(0,-h); ctx.lineTo(s/2,-h/2); ctx.lineTo(0,0); ctx.lineTo(-s/2,-h/2); ctx.closePath(); ctx.fillStyle = colors.top; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(-s/2,-h/2); ctx.lineTo(0,0); ctx.lineTo(0,s); ctx.lineTo(-s/2,s); ctx.closePath(); ctx.fillStyle = colors.side; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(s/2,-h/2); ctx.lineTo(0,0); ctx.lineTo(0,s); ctx.lineTo(s/2,s); ctx.closePath(); ctx.fillStyle = colors.shade; ctx.fill();
+            ctx.restore();
+        }
+
+        function drawCurrentTemple(centerX, centerY, blockSize, variant, type, blocksShown) {
+            const plan = makeTemplePlan(blockSize, variant);
+            plan.sort((a,b)=>(a.level - b.level) || (a.z - b.z));
+            const colors = templeColors[type] || templeColors.normal;
+            
+            const full = Math.floor(blocksShown);
+            for (let i=0;i<full && i<plan.length;i++){
+                const p = plan[i];
+                const sx = centerX + p.x, sy = centerY + p.z*0.45 - p.level*(blockSize*0.9);
+                drawCube(sx, sy, blockSize, colors);
+            }
+        }
+
+        /* -------- Core Drawing & Game Loop -------- */
+        let particles = [], stars = [], confettiParticles = [];
+        let skyProgress = 0, lastBlockSound = 0;
+
+        function drawScene(ts) {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0); // Ensure transform is reset
+
+            // Draw Background
+            drawSky(skyProgress);
+            drawEnvironment();
+            
+            // Draw Game elements
+            if (gameState === 'celebrating') {
+                drawTempleGrid();
+            } else if (gameState === 'running') {
+                const elapsed = Math.max(0, ts - startTime - pausedAccum);
+                const effectiveElapsed = elapsed + powerupBonusTime;
+                const blocksPlaced = clamp(Math.floor((effectiveElapsed / buildDuration) * totalBlocks), 0, totalBlocks);
+
+                const completedCount = firstIndexCumGreaterThanOr(blocksPlaced);
+                if (completedCount > templeCompletedCount) {
+                     for(let i = templeCompletedCount; i < completedCount; i++) {
+                         templeCompleted[i] = true; snapshots[i] = null;
+                         const g = indexToGrid(i);
+                         malinMoveTo(clamp(g.x + 48/2 - 80, 24, canvas.width/DPR - 120), clamp(g.y + 48/2, canvas.height/DPR*0.5, canvas.height/DPR - 60), 520);
+                     }
+                     templeCompletedCount = completedCount;
+                     vibrate(50);
+                }
+                
+                let currentTempleIndex = completedCount >= totalTemples ? totalTemples - 1 : completedCount;
+                const prevCum = completedCount > 0 ? cumulativeBlocks[completedCount - 1] : 0;
+                const blocksInCurrent = clamp(blocksPlaced - prevCum, 0, templeBlockCounts[currentTempleIndex] || 0);
+
+                const centerX = canvas.width/DPR / 2, centerY = canvas.height/DPR*0.35;
+                const renderBlockSize = Math.max(8, Math.floor(Math.min(canvas.width/DPR, canvas.height/DPR) * 0.042));
+                drawCurrentTemple(centerX, centerY, renderBlockSize, templeVariants[currentTempleIndex], templeTypes[currentTempleIndex], blocksInCurrent);
+                drawTempleGrid();
+
+                if (blocksPlaced > lastBlockSound + 10) {
+                    blockAudio.currentTime = 0;
+                    blockAudio.play().catch(()=>{});
+                    lastBlockSound = blocksPlaced;
+                }
+            }
+            
+            updateParticles();
+            drawMalin(ts);
+            drawRooster();
+            if(gameState === 'celebrating') updateConfetti();
+        }
+
+        function loop(ts) {
+            if (gameState !== 'running' && gameState !== 'paused') { raflId = null; return; }
+            if (gameState === 'paused') { lastFrameTime = ts; raflId = requestAnimationFrame(loop); return; }
+
+            const deltaTime = ts - lastFrameTime;
+            lastFrameTime = ts;
+
+            if (ts < powerupActiveUntil) {
+                powerupBonusTime += deltaTime * 1.5;
+                malin.tick += deltaTime * 2;
+            }
+            
+            const elapsed = ts - startTime - pausedAccum;
+            const effectiveElapsed = elapsed + powerupBonusTime;
+            skyProgress = clamp(effectiveElapsed / buildDuration, 0, 1);
+            const percent = Math.floor((clamp(effectiveElapsed, 0, buildDuration) / buildDuration) * 100);
+            hudText.textContent = `Membangun: ${templeCompletedCount}/${totalTemples} • Progress ${percent}%`;
+            progressBar.style.width = `${percent}%`;
+
+            drawScene(ts);
+
+            if (effectiveElapsed >= buildDuration) { endGame(); return; }
+            
+            raflId = requestAnimationFrame(loop);
+        }
+
+        function drawEnvironment() {
+            if (envAssets.bukit) {
+                const parallaxOffset = container.scrollTop * 0.3;
+                ctx.drawImage(envAssets.bukit, 0, hillsY - parallaxOffset, canvas.width / DPR, envAssets.bukit.height);
+            }
+            ctx.globalAlpha = 0.8;
+            for(const cloud of clouds) {
+                cloud.x += cloud.speed;
+                if (cloud.x > canvas.width / DPR) cloud.x = -cloud.w;
+                ctx.drawImage(cloud.img, cloud.x, cloud.y, cloud.w, cloud.h);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        const Dialogue = (function(){ const T = { initialA:4200, gapAB:1400, initialB:4200, afterInitial:700, finishDelay:2000, finishB:3800, finishGap:900, finishA:4200, finishLast:3600 }; let timers = []; const root = dialogueRoot; function clearTimers() { timers.forEach(t => clearTimeout(t)); timers = []; root.innerHTML = ''; root.style.display = 'none'; } function makeRow(side, text) { const row = document.createElement('div'); row.className = `dlg-row ${side === 'left' ? 'dlg-left' : 'dlg-right'}`; const speaker = document.createElement('div'); speaker.className = `speaker ${side === 'left' ? 'speaker-a' : 'speaker-b'}`; const bubble = document.createElement('div'); bubble.className = `bubble ${side}`; bubble.textContent = text || ''; if (side === 'left') { row.appendChild(speaker); row.appendChild(bubble); } else { row.appendChild(bubble); row.appendChild(speaker); } return { row, bubble }; } return { startInitialDialogue: function(n, onDone) { clearTimers(); root.style.display = 'block'; const a = makeRow("left", `Buatkan aku ${n} candi sebelum ayam berkokok! 🐔`); root.appendChild(a.row); requestAnimationFrame(() => a.bubble.classList.add('show')); timers.push(setTimeout(() => { const b = makeRow("right", "Perintah Tuan Putri adalah titah bagiku. Akan kukerahkan semua kekuatan gaibku. 😊"); root.appendChild(b.row); requestAnimationFrame(() => b.bubble.classList.add('show')); }, T.gapAB)); const total = T.initialA + T.gapAB + T.initialB + T.afterInitial; timers.push(setTimeout(() => { root.querySelectorAll('.bubble').forEach(x => x.classList.remove('show')); setTimeout(() => { clearTimers(); if (typeof onDone === 'function') onDone(); }, 360); }, total)); }, showFinishDialogs: function(onDone) { clearTimers(); root.style.display = 'block'; timers.push(setTimeout(() => { const b = makeRow("right", "Lihatlah! Semua candi telah berdiri megah! 😃"); root.appendChild(b.row); requestAnimationFrame(() => b.bubble.classList.add('show')); timers.push(setTimeout(() => { const a = makeRow("left", "Tidak mungkin! Kamu... kamu berhasil! 🎉❤️"); root.appendChild(a.row); requestAnimationFrame(() => a.bubble.classList.add('show')); timers.push(setTimeout(() => { const a2 = makeRow("left", "Baiklah, aku akan menepati janjiku. 🫶🏻🥹❤️‍🩹"); root.appendChild(a2.row); requestAnimationFrame(() => a2.bubble.classList.add('show')); timers.push(setTimeout(() => { root.querySelectorAll('.bubble').forEach(x => x.classList.remove('show')); setTimeout(() => { clearTimers(); if (typeof onDone === 'function') onDone(); }, 420); }, T.finishLast)); }, T.finishA)); }, T.finishGap)); }, T.finishDelay)); }, reset: function() { clearTimers(); } }; })();
+        let malin, rooster;
+        const drawSky = (progress) => { const t = ease(clamp(progress,0,1)); const topNight=hexToRgb('#021226'), bottomNight=hexToRgb('#071a2a'), topDay=hexToRgb('#87CEEB'), bottomDay=hexToRgb('#CFEFFF'); const top=mixRgb(topNight,topDay,t), bottom=mixRgb(bottomNight,bottomDay,t); const g=ctx.createLinearGradient(0,0,0,canvas.height/DPR); g.addColorStop(0,rgbToCss(top)); g.addColorStop(1,rgbToCss(bottom)); ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width/DPR,canvas.height/DPR); ctx.globalAlpha=clamp(1-t*1.5,0,1); for(const star of stars) { star.opacity=Math.max(0, star.opacity+star.v*0.01); if(star.opacity<=0||star.opacity>=1)star.v*=-1; ctx.fillStyle=`rgba(255, 255, 255, ${star.opacity})`; ctx.beginPath(); ctx.arc(star.x,star.y,star.r,0,Math.PI*2); ctx.fill(); } const moonX=canvas.width/DPR-60, moonY=60+t*120, r=18; ctx.globalAlpha=clamp(1-t*1.25,0,1); ctx.fillStyle='#dfe8ff'; ctx.beginPath(); ctx.arc(moonX,moonY,r,0,Math.PI*2); ctx.fill(); ctx.fillStyle=rgbToCss(mixRgb(hexToRgb('#021226'),topDay,t)); ctx.beginPath(); ctx.arc(moonX+7,moonY-2,r,0,Math.PI*2); ctx.fill(); const startY=canvas.height/DPR+40, endY=80, sunX=56, sunY=lerp(startY,endY,t); ctx.globalAlpha=clamp(t*1.2,0,1); const glow=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,80); glow.addColorStop(0,'rgba(255,215,90,0.2)'); glow.addColorStop(1,'rgba(255,215,90,0)'); ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(sunX,sunY,80,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#FFD700'; ctx.beginPath(); ctx.arc(sunX,sunY,20,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1; };
+        const drawMalin = (tick) => { if (malin.moving) { const elapsed = Math.min(1, (performance.now() - malin.moveStart) / malin.moveDur); const e = ease(elapsed); malin.posX = lerp(malin.startX, malin.targetX, e); malin.posY = lerp(malin.startY, malin.targetY, e); if (elapsed >= 1) malin.moving = false; } const bounce = Math.sin(malin.tick*0.014)*4, armSwing = Math.sin(malin.tick*0.02)*8, x = malin.posX, y = malin.posY; ctx.save(); ctx.translate(x, y + bounce); if(performance.now() < powerupActiveUntil) { ctx.fillStyle = 'rgba(255, 215, 0, 0.5)'; ctx.beginPath(); ctx.arc(0, -10, 40, 0, Math.PI*2); ctx.fill(); } ctx.fillStyle = '#6b4b2f'; ctx.fillRect(-8,6,6,8); ctx.fillRect(2,6,6,8); ctx.fillStyle = '#d97736'; ctx.fillRect(-10,-6,20,14); ctx.fillStyle = '#ffd1b5'; ctx.fillRect(-8,-26,16,16); ctx.fillStyle = '#2b1b0f'; ctx.fillRect(-9,-30,18,8); ctx.fillStyle = '#1b1b1b'; ctx.fillRect(-4,-22,3,3); ctx.fillRect(1,-22,3,3); ctx.fillStyle = '#b75f32'; ctx.fillRect(-14, -4 + armSwing*0.04, 6, 3); ctx.fillRect(8, -4 - armSwing*0.04, 6, 3); ctx.fillStyle = '#ffd7a6'; ctx.fillRect(10, -8 - Math.abs(Math.sin(malin.tick*0.01))*4, 6, 6); ctx.restore(); malin.tick = tick; };
+        const malinMoveTo = (x,y,dur) => { if (dur <= 0) { malin.posX = x; malin.posY = y; malin.moving = false; return; } malin.startX = malin.posX; malin.startY = malin.posY; malin.targetX = x; malin.targetY = y; malin.moveStart = performance.now(); malin.moveDur = dur; malin.moving = true; };
+        const startRooster = () => { rooster.active = true; rooster.reached = false; rooster.tick = 0; rooster.x = canvas.width/DPR/2 - 10; rooster.y = canvas.height/DPR*0.5; rooster.vy = -2.6; rooster.targetY = canvas.height/DPR*0.5 - 100; };
+        const drawRooster = () => { if (!rooster.active) return; if (!rooster.reached) { rooster.y += rooster.vy; rooster.vy += 0.02; if (rooster.y <= rooster.targetY) { rooster.reached = true; rooster.vy = 0; try { roosterAudio.currentTime = 0; roosterAudio.play().catch(()=>{}); } catch(e){} } } const flap = Math.sin(rooster.tick*0.18)*6; ctx.save(); ctx.translate(rooster.x, rooster.y); ctx.fillStyle = '#fff3b9'; ctx.fillRect(0,0,rooster.w,rooster.h); ctx.fillStyle = '#ff6b6b'; ctx.fillRect(10,-10,12,6); ctx.fillStyle = '#ffb84d'; ctx.fillRect(rooster.w-6, 14, 6, 4); ctx.fillStyle = '#e6d9c0'; ctx.fillRect(-8, 18 - flap, 16, 6); ctx.fillRect(rooster.w-8, 18 + flap, 16, 6); ctx.restore(); rooster.tick++; };
+        const indexToGrid = (i) => { const col = i % 10, row = Math.floor(i / 10), x = 8 + col * (48), y = canvas.height/DPR*0.55 + row * (48); return {x,y}; };
+        const drawTempleGrid = () => { const tW = 40; for (let i=0;i<totalTemples;i++){ if (templeCompleted[i]) { const gr = indexToGrid(i); const img = snapshots[i] || (snapshots[i] = createTempleSnapshot(tW, templeVariants[i], templeTypes[i])); if (img) ctx.drawImage(img, gr.x, gr.y, tW, tW); } } };
+        const updateParticles = () => { for (let i=particles.length-1;i>=0;i--){ const p = particles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.life--; const alpha = clamp(p.life / 60, 0, 1); ctx.fillStyle = `rgba(210,200,180,${alpha})`; ctx.fillRect(p.x, p.y, 2, 2); if (p.life <= 0) particles.splice(i,1); } };
+        const spawnConfetti = () => { const colors = ['#ffb86b', '#f1fa8c', '#ffffff', '#ff974f']; for(let i=0; i<100; i++) { confettiParticles.push({ x: Math.random() * canvas.width/DPR, y: -Math.random() * canvas.height/DPR, w: 3 + Math.random()*4, h: 5 + Math.random()*6, color: colors[Math.floor(Math.random()*colors.length)], vx: (Math.random()-0.5)*3, vy: 1 + Math.random()*2, life: 180 + Math.random()*120 }); } };
+        const updateConfetti = () => { for (let i=confettiParticles.length-1;i>=0;i--){ const p = confettiParticles[i]; p.x += p.vx; p.y += p.vy; p.life--; p.vx *= 0.98; ctx.fillStyle = p.color; ctx.globalAlpha = clamp(p.life / 120, 0, 1); ctx.fillRect(p.x, p.y, p.w, p.h); if (p.life <= 0) confettiParticles.splice(i,1); } ctx.globalAlpha = 1; };
+        const getTargetSeconds = (n) => { if (n >= 10 && n <= 99) return 20; if (n >= 100 && n <= 500) return 30; return 60; };
+        const firstIndexCumGreaterThanOr = (value) => { let lo = 0, hi = cumulativeBlocks.length; while (lo < hi) { const mid = Math.floor((lo + hi)/2); if (cumulativeBlocks[mid] > value) hi = mid; else lo = mid + 1; } return lo; };
+
+        function prepareTemples(n) {
+            totalTemples = clamp(n, 10, 1001);
+            const width = container.clientWidth;
+            canvas.style.width = `${width}px`;
+            const totalCssHeight = width*1.8;
+            canvas.style.height = `${totalCssHeight}px`;
+            canvas.width = Math.floor(width * DPR); canvas.height = Math.floor(totalCssHeight * DPR);
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+            templeVariants = []; templeTypes = []; templeBlockCounts = []; cumulativeBlocks = [];
+            snapshots = new Array(totalTemples);
+            let acc = 0;
+            for (let i=0;i<totalTemples;i++){
+                const v = Math.floor(Math.random() * 5);
+                templeVariants.push(v);
+                templeTypes.push(Math.random() < 0.05 ? 'gold' : 'normal');
+                const plan = makeTemplePlan(10, v);
+                templeBlockCounts.push(plan.length);
+                acc += plan.length;
+                cumulativeBlocks[i] = acc;
+            }
+            totalBlocks = acc;
+            lastBlocks = new Array(totalTemples).fill(0);
+            templeCompleted = new Array(totalTemples).fill(false);
+            templeCompletedCount = 0;
+        }
+
+        function startBuild() {
+            startTime = performance.now(); lastFrameTime = startTime;
+            pausedAccum = 0; powerupBonusTime = 0; lastBlockSound = 0;
+            buildDuration = getTargetSeconds(totalTemples) * 1000;
+            gameState = 'running';
+            powerupBtn.classList.add('visible');
+            if (raflId) cancelAnimationFrame(raflId);
+            raflId = requestAnimationFrame(loop);
+        }
+
+        function endGame() {
+            gameState = 'finishing'; cancelAnimationFrame(raflId); raflId = null;
+            powerupBtn.classList.remove('visible');
+            vibrate([100,50,100]);
+            templeCompletedCount = totalTemples;
+            for(let i=0;i<totalTemples;i++) templeCompleted[i] = true;
+            hudText.textContent = `Selesai! ${totalTemples} candi berhasil dibangun.`; progressBar.style.width = '100%';
+            Dialogue.showFinishDialogs(() => startCelebrationSequence());
+        }
+
+        function startCelebrationSequence() {
+            gameState = 'celebrating';
+            startRooster();
+            spawnConfetti();
+            malinMoveTo(canvas.width / DPR / 2, canvas.height/DPR*0.5 - 80, 2500);
+            container.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            function celebrationLoop(ts) {
+                if (gameState !== 'celebrating') return;
+                skyProgress = 1;
+                drawScene(ts);
+                requestAnimationFrame(celebrationLoop);
+            }
+            celebrationLoop(performance.now());
+            setTimeout(setupForRestart, 4000);
+        }
+        
+        function resetGame() {
+            if (raflId) cancelAnimationFrame(raflId); raflId = null;
+            try { bgAudio.pause(); bgAudio.currentTime = 0; } catch(e) {}
+            Dialogue.reset();
+            gameState = 'idle';
+            startBtn.textContent = 'Mulai'; startBtn.disabled = false;
+            compactControls.style.display = 'none'; countInput.disabled = false;
+            powerupBtn.classList.remove('visible');
+            
+            malin = { posX:0, posY:0, w:40, h:56, moving:false, tick:0 };
+            rooster = { x:0, y:0, w:40, h:40, active:false, reached:false, tick:0 };
+            particles = []; confettiParticles = [];
+            
+            prepareTemples(parseInt(countInput.value) || 10);
+            
+            stars = []; for(let i=0; i<100; i++) { stars.push({ x: Math.random() * canvas.width / DPR, y: Math.random() * canvas.height/DPR*0.6, r: Math.random() * 1.2, opacity: Math.random(), v: Math.random() > 0.5 ? 1 : -1 }); }
+            hillsY = canvas.height/DPR*0.5 - (envAssets.bukit ? envAssets.bukit.height : 100);
+            
+            skyProgress = 0;
+            hudText.textContent = 'Status: Siap'; progressBar.style.width = '0%';
+            malin.posX = canvas.width/DPR/2 - 80; malin.posY = canvas.height/DPR - 40;
+            drawScene(performance.now());
+        }
+        
+        function setupForRestart() { gameState = 'finished'; startBtn.textContent = 'Mulai Lagi'; startBtn.disabled = false; compactControls.style.display = 'none'; countInput.disabled = false; }
+        
+        startBtn.addEventListener('click', function(){
+            if (gameState === 'running' || gameState === 'starting') return;
+            if (gameState === 'finished' || gameState === 'celebrating') { resetGame(); }
+            gameState = 'starting'; startBtn.disabled = true;
+            prepareTemples(parseInt(countInput.value) || 10);
+            Dialogue.startInitialDialogue(totalTemples, function(){ try { bgAudio.volume = 0.22; bgAudio.play().catch(()=>{}); } catch(e){} compactControls.style.display = 'flex'; startBtn.style.display = 'none'; startBuild(); });
+        });
+        pauseBtn.addEventListener('click', function(){ if (gameState !== 'running' && gameState !== 'paused') return; if (gameState === 'paused') { gameState = 'running'; pauseBtn.textContent = 'Pause'; pausedAccum += performance.now() - pauseStart; try { bgAudio.play().catch(()=>{}); } catch(e) {} } else { gameState = 'paused'; pauseBtn.textContent = 'Lanjut'; pauseStart = performance.now(); try { bgAudio.pause(); } catch(e) {} } });
+        stopBtn.addEventListener('click', () => { if (gameState === 'idle') return; resetGame(); });
+
+        powerupBtn.addEventListener('click', function() {
+            if (!powerupReady || gameState !== 'running') return;
+            powerupReady = false;
+            powerupActiveUntil = performance.now() + POWERUP_DURATION;
+            vibrate(100);
+            powerupAudio.currentTime = 0;
+            powerupAudio.play().catch(()=>{});
+
+            powerupBtn.disabled = true;
+            let cooldownStart = Date.now();
+            let interval = setInterval(() => {
+                let elapsed = Date.now() - cooldownStart;
+                let progress = Math.min(elapsed / POWERUP_COOLDOWN, 1);
+                powerupCooldownOverlay.style.clipPath = `inset(${100 - progress * 100}% 0 0 0)`;
+                if(progress >= 1) {
+                    clearInterval(interval);
+                    powerupReady = true;
+                    powerupBtn.disabled = false;
+                }
+            }, 50);
+        });
+
+        Promise.all([
+            loadImage('asset/bukit.png'),
+            loadImage('asset/awan1.png'),
+            loadImage('asset/awan2.png')
+        ]).then(([bukit, awan1, awan2]) => {
+            envAssets = { bukit, awan1, awan2 };
+            for(let i=0; i<5; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width/DPR,
+                    y: Math.random() * 150,
+                    w: 80 + Math.random() * 50,
+                    h: 40 + Math.random() * 25,
+                    speed: 0.1 + Math.random() * 0.2,
+                    img: Math.random() > 0.5 ? envAssets.awan1 : envAssets.awan2
+                });
+            }
+            resetGame();
+        }).catch(error => {
+            console.error("Gagal memuat aset lingkungan, game akan berjalan tanpanya.", error);
+            resetGame();
+        });
+
+    })();
+    </script>
+</body>
+</html>
