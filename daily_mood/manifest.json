@@ -1,0 +1,44 @@
+{
+    "name": "Focus Dashboard Pro - Mood & Analytics",
+    "short_name": "Focus Pro",
+    "description": "Advanced focus dashboard with Pomodoro timer, mood tracking, analytics, and insights",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#0a0a0f",
+    "theme_color": "#0a0a0f",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300d4ff'/%3E%3Cstop offset='100%25' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='120' fill='url(%23g)'/%3E%3Ctext x='256' y='310' font-family='Arial' font-size='180' font-weight='bold' fill='white' text-anchor='middle'%3E📊%3C/text%3E%3C/svg%3E",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300d4ff'/%3E%3Cstop offset='100%25' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='120' fill='url(%23g)'/%3E%3Ctext x='256' y='310' font-family='Arial' font-size='180' font-weight='bold' fill='white' text-anchor='middle'%3E📊%3C/text%3E%3C/svg%3E",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["productivity", "health", "utilities"],
+    "screenshots": [],
+    "prefer_related_applications": false,
+    "shortcuts": [
+        {
+            "name": "Track Mood",
+            "short_name": "Mood",
+            "description": "Track your daily mood",
+            "url": "./index.html?tab=monitor",
+            "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ctext y='350' font-size='400'%3E😊%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+        },
+        {
+            "name": "Start Timer",
+            "short_name": "Timer",
+            "description": "Start focus timer",
+            "url": "./index.html?tab=pomodoro",
+            "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ctext y='350' font-size='400'%3E⏱️%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+        }
+    ]
+}

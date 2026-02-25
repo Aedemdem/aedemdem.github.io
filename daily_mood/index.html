@@ -1,0 +1,2519 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Focus Dashboard" />
+    <title>Focus Dashboard Pro - Mood & Analytics</title>
+    <link rel="manifest" href="manifest.json" />
+    <style>
+        :root {
+            /* Dark Mode (Default) - Masculine */
+            --bg: #0a0a0f;
+            --bg-gradient: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --bg-card-hover: rgba(255, 255, 255, 0.08);
+            --bg-input: rgba(0, 0, 0, 0.3);
+            --primary: #00d4ff;
+            --primary-glow: rgba(0, 212, 255, 0.3);
+            --secondary: #7c3aed;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --text: #ffffff;
+            --text-muted: #94a3b8;
+            --text-button: #ffffff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --cursor-size: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --heatmap-low: #1e3a5f;
+            --heatmap-mid: #3b82f6;
+            --heatmap-high: #00d4ff;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        [data-theme="girly"] {
+            --bg: #1a0a1a;
+            --bg-gradient: linear-gradient(135deg, #1a0a1a 0%, #2d1b2e 100%);
+            --primary: #ff6b9d;
+            --primary-glow: rgba(255, 107, 157, 0.3);
+            --secondary: #c445f0;
+            --text: #fff0f6;
+            --text-muted: #d8b4c8;
+            --cursor-size: 22px;
+            --heatmap-low: #5f1e3a;
+            --heatmap-mid: #ec4899;
+            --heatmap-high: #ff6b9d;
+        }
+
+        [data-color-scheme="light"] {
+            --bg: #f1f5f9;
+            --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --bg-card: rgba(255, 255, 255, 0.7);
+            --bg-card-hover: rgba(255, 255, 255, 0.9);
+            --bg-input: rgba(255, 255, 255, 0.8);
+            --glass: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --text-button: #ffffff;
+            --primary-glow: rgba(0, 212, 255, 0.25);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="girly"][data-color-scheme="light"] {
+            --bg: #fdf2f8;
+            --bg-gradient: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: var(--bg);
+            background-image: var(--bg-gradient);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh;
+            display: grid;
+            place-items: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        canvas { position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none; }
+
+        .cursor, .cursor-dot {
+            position: fixed;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: none;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .cursor.enabled, .cursor-dot.enabled { display: block; }
+        }
+
+        .cursor {
+            width: var(--cursor-size);
+            height: var(--cursor-size);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            transition: width 0.15s, height 0.15s, background-color 0.15s;
+            mix-blend-mode: difference;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .cursor.hover {
+            width: calc(var(--cursor-size) * 1.4);
+            height: calc(var(--cursor-size) * 1.4);
+            background-color: var(--primary);
+            opacity: 0.4;
+        }
+
+        .cursor-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .card {
+            position: relative;
+            z-index: 1;
+            width: 95%;
+            max-width: 540px;
+            height: 90vh;
+            max-height: 850px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow), 0 0 30px var(--primary-glow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: cardEntrance 0.5s ease;
+        }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                width: 100%;
+                height: 100vh;
+                height: 100dvh;
+                max-height: none;
+                border-radius: 0;
+                border: none;
+            }
+        }
+
+        .header {
+            text-align: center;
+            padding: 1.2rem 1.5rem 0.8rem;
+            border-bottom: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .greeting {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .theme-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .theme-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--glass-border);
+            cursor: pointer;
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-btn:hover { 
+            transform: scale(1.1); 
+            border-color: var(--primary);
+            background: var(--bg-card-hover);
+        }
+        
+        .theme-btn.active { 
+            background: var(--primary); 
+            color: #000; 
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 100;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .date {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0.3rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.2rem;
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid var(--glass-border);
+            overflow-x: auto;
+            flex-shrink: 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tabs::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 60px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 0.3rem;
+            font-size: 0.65rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+        .tab-btn.active { color: var(--primary); background: rgba(255, 255, 255, 0.08); }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.2rem;
+            animation: fadeIn 0.3s ease;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-content.active { display: flex; flex-direction: column; gap: 1rem; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group { display: flex; gap: 0.5rem; }
+
+        input, textarea, select {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        textarea { resize: none; min-height: 100px; }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            padding-right: 35px;
+        }
+
+        select option {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--text-button);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            font-size: 0.85rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+        button:active { transform: translateY(0); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        button.secondary { 
+            background: var(--bg-card); 
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+            text-shadow: none;
+        }
+        button.secondary:hover { background: var(--bg-card-hover); }
+        
+        button.danger { 
+            background: transparent; 
+            color: var(--danger); 
+            border: 1px solid var(--danger);
+            text-shadow: none;
+        }
+        button.danger:hover { background: var(--danger); color: #fff; }
+        
+        button.icon-btn { padding: 10px 12px; min-width: 40px; }
+        button.small { padding: 6px 12px; font-size: 0.75rem; }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .section-stats {
+            font-size: 0.65rem;
+            color: var(--primary);
+            background: rgba(0, 212, 255, 0.12);
+            padding: 3px 8px;
+            border-radius: 8px;
+        }
+
+        ul {
+            list-style: none;
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        ul::-webkit-scrollbar { width: 3px; }
+        ul::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+
+        li {
+            background: var(--bg-card);
+            padding: 10px 12px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            gap: 0.5rem;
+            transition: var(--transition);
+            animation: slideIn 0.25s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-12px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        li:hover { background: var(--bg-card-hover); transform: translateX(5px); }
+        li.completed { opacity: 0.55; }
+        li.completed span { text-decoration: line-through; color: var(--text-muted); }
+
+        li button {
+            padding: 4px 7px;
+            font-size: 0.65rem;
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        li button:hover { background: var(--danger); color: #fff; }
+
+        .timer-modes { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; }
+
+        .timer-modes button {
+            padding: 6px 11px;
+            font-size: 0.7rem;
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+        }
+
+        .timer-modes button.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .timer-display {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--bg-input);
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .timer-display.active { animation: pulse 1.5s ease-in-out infinite; }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 15px var(--primary-glow); }
+            50% { box-shadow: 0 0 30px var(--primary-glow); }
+        }
+
+        .timer-time {
+            font-size: 3.5rem;
+            font-weight: 100;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -2px;
+            text-shadow: 0 0 25px var(--primary-glow);
+        }
+
+        @media (max-width: 400px) { .timer-time { font-size: 2.8rem; } }
+
+        .timer-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .timer-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .timer-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 1s linear;
+        }
+
+        .timer-controls { display: flex; gap: 0.5rem; justify-content: center; }
+        .timer-controls button { min-width: 85px; }
+        .timer-controls button.pause { background: linear-gradient(135deg, var(--warning), #d97706); }
+
+        .links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+        @media (max-width: 400px) { .links-grid { grid-template-columns: 1fr; } }
+
+        .link-item {
+            background: var(--bg-card);
+            padding: 11px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .link-item:hover { background: var(--bg-card-hover); transform: translateY(-2px); }
+        .link-item a { color: var(--text); text-decoration: none; font-size: 0.8rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .link-item a:hover { color: var(--primary); }
+
+        .history-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 0.8rem; }
+        @media (max-width: 380px) { .history-stats { grid-template-columns: 1fr; } }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 0.9rem 0.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.3rem; }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.9rem;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .setting-label { font-size: 0.8rem; color: var(--text); font-weight: 500; }
+        .setting-desc { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toggle.active { background: var(--primary); }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        .toggle.active::after { left: 22px; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(6px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+
+        .modal {
+            background: var(--bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.85) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+        .modal-title { font-size: 1.4rem; color: var(--text); margin-bottom: 0.5rem; font-weight: 600; }
+        .modal-message { color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
+        .modal-buttons { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+        .alert-modal.success .modal-icon { animation: successPop 0.5s ease; }
+        .alert-modal.warning .modal-icon { animation: shake 0.5s ease; }
+        .alert-modal.info .modal-icon { animation: bounce 0.5s ease; }
+
+        @keyframes successPop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* Mood Tracker Styles */
+        .mood-tracker { display: flex; flex-direction: column; gap: 1.2rem; }
+
+        .mood-header {
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .mood-header h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.4rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mood-header p { color: var(--text-muted); font-size: 0.75rem; }
+
+        .mood-status {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .mood-status .status-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .mood-status .status-text { color: var(--text); font-size: 0.85rem; margin-bottom: 0.3rem; }
+        .mood-status .status-time { color: var(--text-muted); font-size: 0.65rem; }
+        .mood-status .status-pending { color: var(--warning); }
+
+        .likert-scale {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.4rem;
+            padding: 0.8rem 0;
+            flex-wrap: wrap;
+        }
+
+        .likert-item {
+            flex: 1;
+            min-width: 55px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .likert-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: 2px solid var(--glass-border);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .likert-btn:hover { border-color: var(--primary); background: var(--bg-card-hover); transform: scale(1.05); }
+        .likert-btn.selected { border-color: var(--primary); background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary-glow); }
+
+        .likert-label { font-size: 0.55rem; color: var(--text-muted); text-align: center; line-height: 1.2; }
+
+        /* Mood Categories */
+        .mood-categories {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .category-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .category-icon { font-size: 1.3rem; }
+        .category-title { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+        .category-desc { font-size: 0.65rem; color: var(--text-muted); margin-left: auto; }
+
+        .subcategory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .subcategory-item:last-child { border-bottom: none; }
+
+        .subcategory-label {
+            font-size: 0.75rem;
+            color: var(--text);
+            flex: 1;
+        }
+
+        .subcategory-input {
+            width: 100px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .subcategory-input input {
+            width: 60px;
+            padding: 4px 6px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .subcategory-input span {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Analytics */
+        .analytics-container { display: flex; flex-direction: column; gap: 1rem; }
+
+        .analytics-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .analytics-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .trend-chart {
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 3px;
+            padding: 0.5rem 0;
+        }
+
+        .trend-bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 3px 3px 0 0;
+            min-height: 4px;
+            transition: height 0.5s ease;
+            position: relative;
+        }
+
+        .trend-bar:hover { opacity: 0.8; }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+            padding: 0.5rem 0;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            background: var(--heatmap-low);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .heatmap-cell:hover { transform: scale(1.1); }
+        .heatmap-cell.level-1 { background: var(--heatmap-low); }
+        .heatmap-cell.level-2 { background: #2d5a8a; }
+        .heatmap-cell.level-3 { background: var(--heatmap-mid); }
+        .heatmap-cell.level-4 { background: #00a8cc; }
+        .heatmap-cell.level-5 { background: var(--heatmap-high); }
+        .heatmap-cell.empty { background: rgba(255, 255, 255, 0.05); cursor: default; }
+
+        .insight-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 0.6rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .insight-item.positive { border-left-color: var(--success); }
+        .insight-item.warning { border-left-color: var(--warning); }
+
+        .insight-text { font-size: 0.8rem; color: var(--text); line-height: 1.4; }
+        .insight-date { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+        .weekly-summary {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .summary-icon { font-size: 1.5rem; }
+        .summary-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .summary-stat {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.7rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-stat-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+        .summary-stat-label { font-size: 0.6rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+        .summary-insights {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            padding-top: 0.8rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .summary-insights strong { color: var(--text); }
+
+        .mood-reason-text {
+            width: 100%;
+            min-height: 80px;
+            background: var(--bg-input);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .mood-reason-text:focus { border-color: var(--primary); box-shadow: 0 0 12px var(--primary-glow); }
+
+        .category-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .category-tag {
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: var(--text);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .category-tag:hover { border-color: var(--primary); }
+        .category-tag.selected { background: var(--primary); color: #000; border-color: var(--primary); }
+
+        @media (max-width: 400px) {
+            h1 { font-size: 2.5rem; }
+            .timer-time { font-size: 2.5rem; }
+            .likert-btn { width: 42px; height: 42px; font-size: 1.2rem; }
+            .likert-label { font-size: 0.5rem; }
+        }
+
+        .install-prompt {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 9998;
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .install-prompt.show { transform: translateX(-50%) translateY(0); }
+        .install-prompt-text { flex: 1; }
+        .install-prompt-title { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+        .install-prompt-desc { font-size: 0.7rem; color: var(--text-muted); }
+        .install-prompt button { padding: 8px 16px; font-size: 0.75rem; }
+        .install-prompt-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            padding: 4px;
+            min-width: auto;
+        }
+        .install-prompt-close:hover { color: var(--text); transform: none; box-shadow: none; }
+
+        .tab-badge {
+            position: absolute;
+            top: 2px;
+            right: 8px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.55rem;
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .tab-btn { position: relative; }
+    </style>
+</head>
+<body>
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+    <canvas id="canvas"></canvas>
+
+    <div class="card" id="card">
+        <div class="header">
+            <div class="header-top">
+                <div class="greeting" id="greeting">Good morning</div>
+                <div class="theme-toggle">
+                    <button class="theme-btn active" data-theme="masculine" title="Masculine Theme">⚡</button>
+                    <button class="theme-btn" data-theme="girly" title="Girly Theme">🌸</button>
+                </div>
+                <div class="theme-toggle">
+                    <button class="theme-btn" data-color="dark" title="Dark Mode">🌙</button>
+                    <button class="theme-btn" data-color="light" title="Light Mode">☀️</button>
+                </div>
+            </div>
+            <h1 id="clock">00:00</h1>
+            <div class="date" id="date">Loading...</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="monitor">📊 <span data-i18n="mood">Mood</span></button>
+            <button class="tab-btn" data-tab="analytics">📈 <span data-i18n="analytics">Analytics</span></button>
+            <button class="tab-btn" data-tab="pomodoro">⏱️</button>
+            <button class="tab-btn" data-tab="todos">✓</button>
+            <button class="tab-btn" data-tab="notes">📝</button>
+            <button class="tab-btn" data-tab="links">🔗</button>
+            <button class="tab-btn" data-tab="settings">⚙️</button>
+        </div>
+
+        <!-- Self-Monitoring Tab -->
+        <div class="tab-content active" id="tab-monitor">
+            <div class="mood-tracker">
+                <div class="mood-header">
+                    <h2 data-i18n="howAreYou">😊 How are you feeling?</h2>
+                    <p data-i18n="trackDaily">Track your mood daily (19:00 - 23:59)</p>
+                </div>
+
+                <div class="mood-status" id="moodStatus">
+                    <div class="status-icon" id="statusIcon">⏰</div>
+                    <div class="status-text" id="statusText">Loading...</div>
+                    <div class="status-time" id="statusTime"></div>
+                </div>
+
+                <div id="moodInputSection" style="display: none;">
+                    <div class="likert-scale">
+                        <div class="likert-item">
+                            <button class="likert-btn" data-value="1">😞</button>
+                            <span class="likert-label" data-i18n="veryBad">Very Bad</span>
+                        </div>
+                        <div class="likert-item">
+                            <button class="likert-btn" data-value="2">😕</button>
+                            <span class="likert-label" data-i18n="bad">Bad</span>
+                        </div>
+                        <div class="likert-item">
+                            <button class="likert-btn" data-value="3">😐</button>
+                            <span class="likert-label" data-i18n="neutral">Neutral</span>
+                        </div>
+                        <div class="likert-item">
+                            <button class="likert-btn" data-value="4">🙂</button>
+                            <span class="likert-label" data-i18n="good">Good</span>
+                        </div>
+                        <div class="likert-item">
+                            <button class="likert-btn" data-value="5">🤩</button>
+                            <span class="likert-label" data-i18n="veryGood">Very Good</span>
+                        </div>
+                    </div>
+
+                    <div class="mood-categories">
+                        <div class="category-section">
+                            <div class="category-header">
+                                <span class="category-icon">💞</span>
+                                <span class="category-title" data-i18n="relationships">Relationships</span>
+                                <span class="category-desc" data-i18n="connection">Connection</span>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="family">Family</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="relationships" data-sub="family" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="friends">Friends</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="relationships" data-sub="friends" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="partner">Partner</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="relationships" data-sub="partner" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="social">Social</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="relationships" data-sub="social" /><span>/5</span></div>
+                            </div>
+                        </div>
+
+                        <div class="category-section">
+                            <div class="category-header">
+                                <span class="category-icon">🏛️</span>
+                                <span class="category-title" data-i18n="stability">Stability</span>
+                                <span class="category-desc" data-i18n="security">Security & Control</span>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="jobStudy">Job/Study</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="stability" data-sub="job" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="finances">Finances</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="stability" data-sub="finances" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="living">Living</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="stability" data-sub="living" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="workLife">Work-Life</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="stability" data-sub="balance" /><span>/5</span></div>
+                            </div>
+                        </div>
+
+                        <div class="category-section">
+                            <div class="category-header">
+                                <span class="category-icon">🧠</span>
+                                <span class="category-title" data-i18n="mentalState">Mental State</span>
+                                <span class="category-desc" data-i18n="mindset">Mindset</span>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="mindset">Mindset</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="mental" data-sub="mindset" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="stress">Stress</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="mental" data-sub="stress" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="selfTalk">Self-Talk</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="mental" data-sub="selftalk" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="emotions">Emotions</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="mental" data-sub="emotions" /><span>/5</span></div>
+                            </div>
+                        </div>
+
+                        <div class="category-section">
+                            <div class="category-header">
+                                <span class="category-icon">💪</span>
+                                <span class="category-title" data-i18n="physical">Physical</span>
+                                <span class="category-desc" data-i18n="healthEnergy">Health & Energy</span>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="health">Health</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="physical" data-sub="health" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="sleep">Sleep</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="physical" data-sub="sleep" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="energy">Energy</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="physical" data-sub="energy" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="exercise">Exercise</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="physical" data-sub="exercise" /><span>/5</span></div>
+                            </div>
+                        </div>
+
+                        <div class="category-section">
+                            <div class="category-header">
+                                <span class="category-icon">🎯</span>
+                                <span class="category-title" data-i18n="meaning">Meaning</span>
+                                <span class="category-desc" data-i18n="purpose">Purpose & Direction</span>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="goals">Goals</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="meaning" data-sub="goals" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="growth">Growth</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="meaning" data-sub="growth" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="purpose">Purpose</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="meaning" data-sub="purpose" /><span>/5</span></div>
+                            </div>
+                            <div class="subcategory-item">
+                                <span class="subcategory-label" data-i18n="values">Values</span>
+                                <div class="subcategory-input"><input type="number" min="1" max="5" data-cat="meaning" data-sub="values" /><span>/5</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <textarea class="mood-reason-text" id="moodReason" data-i18n-placeholder="whatMadeYouFeel" placeholder="What made you feel this way today? (optional)"></textarea>
+
+                    <div class="category-select" id="categoryTags">
+                        <span class="category-tag" data-tag="relationships">💞 <span data-i18n="relationships">Relationships</span></span>
+                        <span class="category-tag" data-tag="stability">🏛️ <span data-i18n="stability">Stability</span></span>
+                        <span class="category-tag" data-tag="mental">🧠 <span data-i18n="mental">Mental</span></span>
+                        <span class="category-tag" data-tag="physical">💪 <span data-i18n="physical">Physical</span></span>
+                        <span class="category-tag" data-tag="meaning">🎯 <span data-i18n="meaning">Meaning</span></span>
+                    </div>
+
+                    <button id="submitMood" style="width: 100%; margin-top: 1rem;" data-i18n="submitMood">Submit Today's Mood</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="tab-analytics">
+            <div class="analytics-container">
+                <div class="weekly-summary" id="weeklySummary">
+                    <div class="summary-header">
+                        <span class="summary-icon">📊</span>
+                        <span class="summary-title" data-i18n="weeklySummary">Weekly Summary</span>
+                    </div>
+                    <div class="summary-stats">
+                        <div class="summary-stat">
+                            <div class="summary-stat-value" id="weekAvg">-</div>
+                            <div class="summary-stat-label" data-i18n="avgMood">Avg Mood</div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="summary-stat-value" id="weekChange">-</div>
+                            <div class="summary-stat-label" data-i18n="vsLastWeek">vs Last Week</div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="summary-stat-value" id="bestDay">-</div>
+                            <div class="summary-stat-label" data-i18n="bestDay">Best Day</div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="summary-stat-value" id="worstDay">-</div>
+                            <div class="summary-stat-label" data-i18n="worstDay">Worst Day</div>
+                        </div>
+                    </div>
+                    <div class="summary-insights" id="weekInsights" data-i18n="loadingInsights">Loading insights...</div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="analytics-title">📈 <span data-i18n="sevenDayTrend">7-Day Trend</span></div>
+                    <div class="trend-chart" id="trendChart"></div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="analytics-title">🔥 <span data-i18n="moodHeatmap">Mood Heatmap (28 Days)</span></div>
+                    <div class="heatmap" id="heatmap"></div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="analytics-title">💡 <span data-i18n="insights">Insights</span></div>
+                    <div id="insightsList"></div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="analytics-title">📊 <span data-i18n="categoryAverages">Category Averages</span></div>
+                    <div id="categoryAverages"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer Tab -->
+        <div class="tab-content" id="tab-pomodoro">
+            <div class="timer-modes">
+                <button class="mode-btn active" data-mode="25">🎯 25m</button>
+                <button class="mode-btn" data-mode="5">☕ 5m</button>
+                <button class="mode-btn" data-mode="15">🌙 15m</button>
+            </div>
+            <div class="timer-display" id="timerDisplay">
+                <div class="timer-time" id="timerTime">25:00</div>
+                <div class="timer-label" id="timerLabel">Focus Time</div>
+                <div class="timer-progress">
+                    <div class="timer-progress-bar" id="timerProgress" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="timer-controls">
+                <button id="timerToggle">▶ Start</button>
+                <button class="secondary" id="timerReset">↺ Reset</button>
+            </div>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div class="tab-content" id="tab-todos">
+            <div class="section-header">
+                <span class="section-title">📋 <span data-i18n="tasks">Tasks</span></span>
+                <span class="section-stats" id="taskCount">0/0</span>
+            </div>
+            <div class="input-group">
+                <input type="text" id="todoInput" data-i18n-placeholder="addTask" placeholder="Add a task..." />
+                <button class="icon-btn" id="addBtn">+</button>
+            </div>
+            <ul id="todoList"></ul>
+            <div class="input-group">
+                <button class="secondary" id="clearCompleted" style="flex:1" data-i18n="clearDone">Clear Done</button>
+                <button class="danger" id="clearAll" style="flex:1" data-i18n="clearAll">Clear All</button>
+            </div>
+        </div>
+
+        <!-- Notes Tab -->
+        <div class="tab-content" id="tab-notes">
+            <div class="section-header">
+                <span class="section-title">📝 <span data-i18n="notes">Notes</span></span>
+                <span class="section-stats" id="noteStatus"></span>
+            </div>
+            <textarea id="noteArea" data-i18n-placeholder="writeNotes" placeholder="Write your notes..."></textarea>
+            <div class="input-group">
+                <button id="saveNote" style="flex:1" data-i18n="save">💾 Save</button>
+                <button class="secondary" id="clearNote" style="flex:1" data-i18n="clear">🗑️ Clear</button>
+            </div>
+        </div>
+
+        <!-- Links Tab -->
+        <div class="tab-content" id="tab-links">
+            <div class="section-header">
+                <span class="section-title">🔗 <span data-i18n="links">Links</span></span>
+                <span class="section-stats" id="linkCount">0</span>
+            </div>
+            <div class="input-group">
+                <input type="text" id="linkName" data-i18n-placeholder="name" placeholder="Name" style="flex:0.4" />
+                <input type="url" id="linkUrl" data-i18n-placeholder="https" placeholder="https://..." style="flex:1" />
+                <button class="icon-btn" id="addLink">+</button>
+            </div>
+            <div class="links-grid" id="linksList"></div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="tab-content" id="tab-settings">
+            <div class="setting-item">
+                <div><div class="setting-label" data-i18n="language">🌐 Language</div><div class="setting-desc" data-i18n="chooseLanguage">Choose your language</div></div>
+                <select id="languageSelect" style="flex:0.5;min-width:100px">
+                    <option value="en">English</option>
+                    <option value="id">Indonesia</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <div><div class="setting-label">🔔 <span data-i18n="sound">Sound</span></div><div class="setting-desc" data-i18n="soundDesc">Play alarm on completion</div></div>
+                <div class="toggle active" id="soundToggle"></div>
+            </div>
+            <div class="setting-item">
+                <div><div class="setting-label">📬 <span data-i18n="notifications">Notifications</span></div><div class="setting-desc" data-i18n="notifyDesc">Desktop notifications</div></div>
+                <div class="toggle active" id="notifyToggle"></div>
+            </div>
+            <div class="setting-item">
+                <div><div class="setting-label">✨ <span data-i18n="particles">Particles</span></div><div class="setting-desc" data-i18n="particlesDesc">Background effects</div></div>
+                <div class="toggle active" id="particlesToggle"></div>
+            </div>
+            <div class="setting-item">
+                <div><div class="setting-label">🖱️ <span data-i18n="cursor">Cursor</span></div><div class="setting-desc" data-i18n="cursorDesc">Custom cursor (desktop)</div></div>
+                <div class="toggle active" id="cursorToggle"></div>
+            </div>
+            <div class="setting-item">
+                <div><div class="setting-label">🔊 <span data-i18n="alarmSound">Alarm Sound</span></div><div class="setting-desc" data-i18n="chooseTone">Choose tone</div></div>
+                <select id="alarmSound" style="flex:0.5;min-width:90px">
+                    <option value="digital">Digital</option>
+                    <option value="chime">Chime</option>
+                    <option value="bell">Bell</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <div><div class="setting-label">💾 <span data-i18n="exportData">Export Data</span></div><div class="setting-desc" data-i18n="downloadData">Download all data</div></div>
+                <button class="secondary" id="exportData" style="padding:8px 16px" data-i18n="export">Export</button>
+            </div>
+            <div class="setting-item">
+                <div><div class="setting-label">🗑️ <span data-i18n="resetAll">Reset All</span></div><div class="setting-desc" data-i18n="clearAllData">Clear all saved data</div></div>
+                <button class="danger" id="resetAll" style="padding:8px 16px" data-i18n="reset">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alarm Modal -->
+    <div class="modal-overlay" id="alarmModal">
+        <div class="modal">
+            <div class="modal-icon">🔔</div>
+            <div class="modal-title" data-i18n="timesUp">Time's Up!</div>
+            <div class="modal-message" id="alarmMessage">Session complete!</div>
+            <div class="modal-buttons">
+                <button id="stopAlarm" data-i18n="stop">🔕 Stop</button>
+                <button class="secondary" id="snoozeAlarm" data-i18n="snooze">⏰ 5m</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="modal-overlay alert-modal" id="alertModal">
+        <div class="modal">
+            <div class="modal-icon" id="alertIcon">✓</div>
+            <div class="modal-title" id="alertTitle">Success</div>
+            <div class="modal-message" id="alertMessage">Operation completed!</div>
+            <div class="modal-buttons">
+                <button id="alertOk" data-i18n="ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <button class="install-prompt-close" id="installPromptClose">×</button>
+        <div class="install-prompt-text">
+            <div class="install-prompt-title" data-i18n="installApp">📲 Install App</div>
+            <div class="install-prompt-desc" data-i18n="addToHome">Add to home screen</div>
+        </div>
+        <button id="installBtn" data-i18n="install">Install</button>
+    </div>
+
+    <script>
+        // ==================== TRANSLATIONS ====================
+        const translations = {
+            en: {
+                mood: "Mood",
+                analytics: "Analytics",
+                howAreYou: "😊 How are you feeling?",
+                trackDaily: "Track your mood daily (19:00 - 23:59)",
+                veryBad: "Very Bad",
+                bad: "Bad",
+                neutral: "Neutral",
+                good: "Good",
+                veryGood: "Very Good",
+                relationships: "Relationships",
+                connection: "Connection",
+                family: "Family",
+                friends: "Friends",
+                partner: "Partner",
+                social: "Social",
+                stability: "Stability",
+                security: "Security & Control",
+                jobStudy: "Job/Study",
+                finances: "Finances",
+                living: "Living",
+                workLife: "Work-Life",
+                mentalState: "Mental State",
+                mindset: "Mindset",
+                stress: "Stress",
+                selfTalk: "Self-Talk",
+                emotions: "Emotions",
+                physical: "Physical",
+                healthEnergy: "Health & Energy",
+                health: "Health",
+                sleep: "Sleep",
+                energy: "Energy",
+                exercise: "Exercise",
+                meaning: "Meaning",
+                purpose: "Purpose & Direction",
+                goals: "Goals",
+                growth: "Growth",
+                purpose: "Purpose",
+                values: "Values",
+                whatMadeYouFeel: "What made you feel this way today? (optional)",
+                submitMood: "Submit Today's Mood",
+                weeklySummary: "Weekly Summary",
+                avgMood: "Avg Mood",
+                vsLastWeek: "vs Last Week",
+                bestDay: "Best Day",
+                worstDay: "Worst Day",
+                loadingInsights: "Loading insights...",
+                sevenDayTrend: "7-Day Trend",
+                moodHeatmap: "Mood Heatmap (28 Days)",
+                insights: "Insights",
+                categoryAverages: "Category Averages",
+                tasks: "Tasks",
+                addTask: "Add a task...",
+                clearDone: "Clear Done",
+                clearAll: "Clear All",
+                notes: "Notes",
+                writeNotes: "Write your notes...",
+                save: "💾 Save",
+                clear: "🗑️ Clear",
+                links: "Links",
+                name: "Name",
+                https: "https://...",
+                language: "🌐 Language",
+                chooseLanguage: "Choose your language",
+                sound: "Sound",
+                soundDesc: "Play alarm on completion",
+                notifications: "Notifications",
+                notifyDesc: "Desktop notifications",
+                particles: "Particles",
+                particlesDesc: "Background effects",
+                cursor: "Cursor",
+                cursorDesc: "Custom cursor (desktop)",
+                alarmSound: "Alarm Sound",
+                chooseTone: "Choose tone",
+                exportData: "Export Data",
+                downloadData: "Download all data",
+                export: "Export",
+                resetAll: "Reset All",
+                clearAllData: "Clear all saved data",
+                reset: "Reset",
+                timesUp: "Time's Up!",
+                stop: "🔕 Stop",
+                snooze: "⏰ 5m",
+                ok: "OK",
+                installApp: "📲 Install App",
+                addToHome: "Add to home screen",
+                install: "Install",
+                selectMood: "Select Mood",
+                selectMoodMsg: "Please select a mood level (1-5).",
+                alreadySubmitted: "Already Submitted",
+                alreadySubmittedMsg: "You have already submitted today.",
+                notAvailable: "Not Available",
+                notAvailableMsg: "Submission only available 19:00-23:59.",
+                moodRecorded: "Mood Recorded!",
+                saveError: "Save Error",
+                saveErrorMsg: "Failed to save mood entry. Please try again.",
+                noMoodData: "No mood data yet. Start tracking!",
+                exportSuccess: "Data Exported",
+                exportSuccessMsg: "Your data has been downloaded.",
+                exportFailed: "Export Failed",
+                exportFailedMsg: "Could not export data.",
+                resetConfirm: "Reset All Data",
+                resetConfirmMsg: "This will delete ALL data including mood entries, tasks, notes, and settings. Continue?",
+                resetComplete: "Reset Complete",
+                resetCompleteMsg: "Reloading...",
+                deleteTasks: "Delete all tasks?",
+                clearNotes: "Clear notes?",
+                clearHistory: "Clear history?",
+                saved: "✓ Saved",
+                unsaved: "● Unsaved",
+                noSessions: "No sessions yet",
+                completed: "✅ Completed",
+                moodTendsHigherWeekends: "📊 Mood tends to be <strong>higher on weekends</strong>.",
+                moodTendsHigherWeekdays: "📊 Mood tends to be <strong>higher on weekdays</strong>.",
+                bestDayIs: "⭐ <strong>{day}</strong> is typically your best day.",
+                moodImproving: "📈 Your mood is <strong>improving</strong> compared to last week.",
+                moodDeclining: "📉 Your mood is slightly <strong>lower</strong> than last week.",
+                keepTracking: "Keep tracking for more insights!",
+                avgMoodGreat: "🌟 Your average mood is <strong>{avg}/5</strong> - that's great!",
+                avgMoodStable: "📊 Your average mood is <strong>{avg}/5</strong> - stable and balanced.",
+                avgMoodImprove: "💙 Your average mood is <strong>{avg}/5</strong>. Consider what might help improve it.",
+                focusComplete: "🎉 Focus complete! Take a break.",
+                breakOver: "☕ Break over! Ready to focus?",
+                available: "Available 19:00 - 23:59",
+                next: "Next: ",
+                rateYourDay: "Rate your day",
+                selectMoodCategories: "Select mood and categories",
+                submittedAt: "Submitted at ",
+                today: "Today: "
+            },
+            id: {
+                mood: "Suasana Hati",
+                analytics: "Analitik",
+                howAreYou: "😊 Bagaimana perasaanmu?",
+                trackDaily: "Catat suasana hatimu setiap hari (19:00 - 23:59)",
+                veryBad: "Sangat Buruk",
+                bad: "Buruk",
+                neutral: "Netral",
+                good: "Baik",
+                veryGood: "Sangat Baik",
+                relationships: "Hubungan",
+                connection: "Koneksi",
+                family: "Keluarga",
+                friends: "Teman",
+                partner: "Pasangan",
+                social: "Sosial",
+                stability: "Stabilitas",
+                security: "Keamanan & Kontrol",
+                jobStudy: "Pekerjaan/Studi",
+                finances: "Keuangan",
+                living: "Tempat Tinggal",
+                workLife: "Work-Life",
+                mentalState: "Kondisi Mental",
+                mindset: "Pola Pikir",
+                stress: "Stres",
+                selfTalk: "Self-Talk",
+                emotions: "Emosi",
+                physical: "Fisik",
+                healthEnergy: "Kesehatan & Energi",
+                health: "Kesehatan",
+                sleep: "Tidur",
+                energy: "Energi",
+                exercise: "Olahraga",
+                meaning: "Makna",
+                purpose: "Tujuan & Arah",
+                goals: "Tujuan",
+                growth: "Pertumbuhan",
+                purpose: "Tujuan",
+                values: "Nilai",
+                whatMadeYouFeel: "Apa yang membuatmu merasa seperti ini hari ini? (opsional)",
+                submitMood: "Kirim Suasana Hati Hari Ini",
+                weeklySummary: "Ringkasan Mingguan",
+                avgMood: "Rata-rata",
+                vsLastWeek: "vs Minggu Lalu",
+                bestDay: "Hari Terbaik",
+                worstDay: "Hari Terburuk",
+                loadingInsights: "Memuat wawasan...",
+                sevenDayTrend: "Tren 7 Hari",
+                moodHeatmap: "Peta Panas Suasana Hati (28 Hari)",
+                insights: "Wawasan",
+                categoryAverages: "Rata-rata Kategori",
+                tasks: "Tugas",
+                addTask: "Tambah tugas...",
+                clearDone: "Hapus Selesai",
+                clearAll: "Hapus Semua",
+                notes: "Catatan",
+                writeNotes: "Tulis catatanmu...",
+                save: "💾 Simpan",
+                clear: "🗑️ Hapus",
+                links: "Tautan",
+                name: "Nama",
+                https: "https://...",
+                language: "🌐 Bahasa",
+                chooseLanguage: "Pilih bahasamu",
+                sound: "Suara",
+                soundDesc: "Putar alarm saat selesai",
+                notifications: "Notifikasi",
+                notifyDesc: "Notifikasi desktop",
+                particles: "Partikel",
+                particlesDesc: "Efek latar belakang",
+                cursor: "Kursor",
+                cursorDesc: "Kursor khusus (desktop)",
+                alarmSound: "Suara Alarm",
+                chooseTone: "Pilih nada",
+                exportData: "Ekspor Data",
+                downloadData: "Unduh semua data",
+                export: "Ekspor",
+                resetAll: "Reset Semua",
+                clearAllData: "Hapus semua data tersimpan",
+                reset: "Reset",
+                timesUp: "Waktunya Habis!",
+                stop: "🔕 Stop",
+                snooze: "⏰ 5m",
+                ok: "OK",
+                installApp: "📲 Instal Aplikasi",
+                addToHome: "Tambah ke layar utama",
+                install: "Instal",
+                selectMood: "Pilih Suasana Hati",
+                selectMoodMsg: "Pilih tingkat suasana hati (1-5).",
+                alreadySubmitted: "Sudah Dikirim",
+                alreadySubmittedMsg: "Kamu sudah mengirim hari ini.",
+                notAvailable: "Tidak Tersedia",
+                notAvailableMsg: "Pengiriman hanya tersedia 19:00-23:59.",
+                moodRecorded: "Suasana Hati Tercatat!",
+                saveError: "Kesalahan Penyimpanan",
+                saveErrorMsg: "Gagal menyimpan. Silakan coba lagi.",
+                noMoodData: "Belum ada data. Mulai catat!",
+                exportSuccess: "Data Diekspor",
+                exportSuccessMsg: "Data kamu telah diunduh.",
+                exportFailed: "Ekspor Gagal",
+                exportFailedMsg: "Tidak dapat mengekspor data.",
+                resetConfirm: "Reset Semua Data",
+                resetConfirmMsg: "Ini akan menghapus SEMUA data termasuk suasana hati, tugas, catatan, dan pengaturan. Lanjutkan?",
+                resetComplete: "Reset Selesai",
+                resetCompleteMsg: "Memuat ulang...",
+                deleteTasks: "Hapus semua tugas?",
+                clearNotes: "Hapus catatan?",
+                clearHistory: "Hapus riwayat?",
+                saved: "✓ Tersimpan",
+                unsaved: "● Belum tersimpan",
+                noSessions: "Belum ada sesi",
+                completed: "✅ Selesai",
+                moodTendsHigherWeekends: "📊 Suasana hati cenderung <strong>lebih tinggi di akhir pekan</strong>.",
+                moodTendsHigherWeekdays: "📊 Suasana hati cenderung <strong>lebih tinggi di hari kerja</strong>.",
+                bestDayIs: "⭐ <strong>{day}</strong> biasanya hari terbaikmu.",
+                moodImproving: "📈 Suasana hatimu <strong>membaik</strong> dibanding minggu lalu.",
+                moodDeclining: "📉 Suasana hatimu sedikit <strong>lebih rendah</strong> dari minggu lalu.",
+                keepTracking: "Terus catat untuk wawasan lebih!",
+                avgMoodGreat: "🌟 Rata-rata suasana hatimu <strong>{avg}/5</strong> - itu bagus!",
+                avgMoodStable: "📊 Rata-rata suasana hatimu <strong>{avg}/5</strong> - stabil dan seimbang.",
+                avgMoodImprove: "💙 Rata-rata suasana hatimu <strong>{avg}/5</strong>. Pertimbangkan apa yang bisa membantu meningkatkannya.",
+                focusComplete: "🎉 Fokus selesai! Istirahatlah.",
+                breakOver: "☕ Istirahat selesai! Siap fokus?",
+                available: "Tersedia 19:00 - 23:59",
+                next: "Berikutnya: ",
+                rateYourDay: "Nilai harimu",
+                selectMoodCategories: "Pilih suasana hati dan kategori",
+                submittedAt: "Dikirim pada ",
+                today: "Hari ini: "
+            }
+        };
+
+        let currentLang = localStorage.getItem('language') || 'en';
+
+        function t(key, params = {}) {
+            const text = translations[currentLang][key] || translations['en'][key] || key;
+            return text.replace(/{(\w+)}/g, (match, p1) => params[p1] || match);
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                el.innerHTML = t(key);
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                el.placeholder = t(key);
+            });
+            document.getElementById('languageSelect').value = currentLang;
+        }
+
+        // ==================== INDEXEDDB WRAPPER ====================
+        const DB = {
+            name: 'FocusDashboardDB',
+            version: 1,
+            db: null,
+
+            async connect() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.name, this.version);
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains('moodEntries')) {
+                            const store = db.createObjectStore('moodEntries', { keyPath: 'date' });
+                            store.createIndex('timestamp', 'timestamp', { unique: false });
+                        }
+                        if (!db.objectStoreNames.contains('pomodoroHistory')) {
+                            db.createObjectStore('pomodoroHistory', { keyPath: 'id', autoIncrement: true });
+                        }
+                    };
+                    request.onsuccess = (e) => {
+                        this.db = e.target.result;
+                        resolve(this.db);
+                    };
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            async saveMood(entry) {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction('moodEntries', 'readwrite');
+                    const store = tx.objectStore('moodEntries');
+                    const request = store.put(entry);
+                    request.onsuccess = () => resolve(entry);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            async getMood(date) {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction('moodEntries', 'readonly');
+                    const store = tx.objectStore('moodEntries');
+                    const request = store.get(date);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            async getAllMoods() {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction('moodEntries', 'readonly');
+                    const store = tx.objectStore('moodEntries');
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            async savePomodoro(entry) {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction('pomodoroHistory', 'readwrite');
+                    const store = tx.objectStore('pomodoroHistory');
+                    const request = store.add(entry);
+                    request.onsuccess = () => resolve(entry);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            async getAllPomodoro() {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction('pomodoroHistory', 'readonly');
+                    const store = tx.objectStore('pomodoroHistory');
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            async clearPomodoro() {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction('pomodoroHistory', 'readwrite');
+                    const store = tx.objectStore('pomodoroHistory');
+                    const request = store.clear();
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+        };
+
+        // ==================== APP STATE ====================
+        const App = {
+            theme: localStorage.getItem('theme') || 'masculine',
+            colorScheme: localStorage.getItem('colorScheme') || 'dark',
+            soundEnabled: localStorage.getItem('soundEnabled') !== 'false',
+            notifyEnabled: localStorage.getItem('notifyEnabled') !== 'false',
+            particlesEnabled: localStorage.getItem('particlesEnabled') !== 'false',
+            cursorEnabled: localStorage.getItem('cursorEnabled') !== 'false',
+            alarmSound: localStorage.getItem('alarmSound') || 'digital',
+            audioCtx: null,
+            timerInterval: null,
+            timeLeft: 25 * 60,
+            totalTime: 25 * 60,
+            isRunning: false,
+            currentMode: 25,
+            alarmLoop: null,
+            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+            deferredPrompt: null,
+            selectedMood: null,
+            selectedCategories: [],
+            moodReason: ''
+        };
+
+        // Initialize IndexedDB
+        DB.connect().then(() => {
+            console.log('IndexedDB connected');
+            updateMoodUI();
+            updateAnalytics();
+        }).catch(err => console.error('IndexedDB error:', err));
+
+        // ==================== THEME & COLOR SCHEME ====================
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            App.theme = theme;
+            localStorage.setItem('theme', theme);
+            document.querySelectorAll('.theme-btn[data-theme]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+        }
+
+        function applyColorScheme(scheme) {
+            document.documentElement.setAttribute('data-color-scheme', scheme);
+            App.colorScheme = scheme;
+            localStorage.setItem('colorScheme', scheme);
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', scheme === 'light' ? '#f1f5f9' : '#0a0a0f');
+            document.querySelectorAll('.theme-btn[data-color]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.color === scheme);
+            });
+        }
+
+        applyTheme(App.theme);
+        applyColorScheme(App.colorScheme);
+
+        document.querySelectorAll('.theme-btn[data-theme]').forEach(btn => {
+            btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+        });
+
+        document.querySelectorAll('.theme-btn[data-color]').forEach(btn => {
+            btn.addEventListener('click', () => applyColorScheme(btn.dataset.color));
+        });
+
+        // ==================== LANGUAGE ====================
+        document.getElementById('languageSelect').addEventListener('change', function() {
+            currentLang = this.value;
+            localStorage.setItem('language', currentLang);
+            applyTranslations();
+            updateMoodUI();
+        });
+
+        // ==================== CLOCK ====================
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('date').textContent = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+
+            const hour = now.getHours();
+            let greeting = 'Good evening';
+            if (hour >= 5 && hour < 12) greeting = 'Good morning';
+            else if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
+            document.getElementById('greeting').textContent = greeting;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // ==================== TABS ====================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + tabId).classList.add('active');
+                if (tabId === 'analytics') updateAnalytics();
+            });
+        });
+
+        // ==================== PARTICLES ====================
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const mouse = { x: null, y: null, radius: 100 };
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+            if (App.isMobile) return;
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            if (App.cursorEnabled) {
+                document.querySelector('.cursor').style.left = e.clientX + 'px';
+                document.querySelector('.cursor').style.top = e.clientY + 'px';
+                document.querySelector('.cursor-dot').style.left = e.clientX + 'px';
+                document.querySelector('.cursor-dot').style.top = e.clientY + 'px';
+            }
+            const card = document.getElementById('card');
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 40;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+            card.style.transform = `perspective(1000px) rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.size = Math.random() * 1.5 + 0.8;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                if (App.particlesEnabled && !App.isMobile && mouse.x) {
+                    const dx = mouse.x - this.x, dy = mouse.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < mouse.radius) {
+                        this.x -= (dx / dist) * (mouse.radius - dist) / mouse.radius;
+                        this.y -= (dy / dist) * (mouse.radius - dist) / mouse.radius;
+                    }
+                }
+            }
+            draw() {
+                if (!App.particlesEnabled || App.isMobile) return;
+                const hue = App.theme === 'girly' ? 330 + Math.random() * 30 : 180 + Math.random() * 60;
+                ctx.fillStyle = `hsla(${hue}, 60%, 60%, 0.4)`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = App.isMobile ? 40 : 60;
+            for (let i = 0; i < count; i++) particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (App.particlesEnabled && !App.isMobile) {
+                particles.forEach(p => { p.update(); p.draw(); });
+                ctx.strokeStyle = App.theme === 'girly' ? 'rgba(255, 107, 157, 0.08)' : 'rgba(0, 212, 255, 0.05)';
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 80) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke(); }
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        initParticles();
+        animate();
+
+        // ==================== CURSOR ====================
+        if (!App.isMobile && App.cursorEnabled) {
+            document.querySelector('.cursor').classList.add('enabled');
+            document.querySelector('.cursor-dot').classList.add('enabled');
+        }
+
+        document.querySelectorAll('button, a, input, textarea, select, .link-item, .likert-btn, .category-tag, .heatmap-cell').forEach(el => {
+            el.addEventListener('mouseenter', () => { if (!App.isMobile && App.cursorEnabled) document.querySelector('.cursor').classList.add('hover'); });
+            el.addEventListener('mouseleave', () => { if (!App.isMobile && App.cursorEnabled) document.querySelector('.cursor').classList.remove('hover'); });
+        });
+
+        // ==================== CUSTOM ALERT ====================
+        function showAlert(type, title, message, callback) {
+            const modal = document.getElementById('alertModal');
+            document.getElementById('alertIcon').textContent = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' }[type] || 'ℹ️';
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            modal.classList.add('active', type);
+            document.getElementById('alertOk').onclick = () => { modal.classList.remove('active', type); if (callback) callback(); };
+        }
+
+        // ==================== AUDIO ====================
+        function initAudio() { if (!App.audioCtx) App.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+        function playTone(freq, type, duration, startTime = 0) {
+            const osc = App.audioCtx.createOscillator();
+            const gain = App.audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(App.audioCtx.destination);
+            osc.frequency.value = freq;
+            osc.type = type;
+            gain.gain.setValueAtTime(0.2, App.audioCtx.currentTime + startTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, App.audioCtx.currentTime + startTime + duration);
+            osc.start(App.audioCtx.currentTime + startTime);
+            osc.stop(App.audioCtx.currentTime + startTime + duration);
+        }
+
+        function playAlarm() {
+            initAudio();
+            const sounds = {
+                digital: () => { [0, 0.15, 0.3, 0.45, 0.6, 0.75].forEach((t, i) => playTone(880 + i * 100, 'square', 0.1, t)); },
+                chime: () => { [523, 659, 784, 1047].forEach((f, i) => playTone(f, 'sine', 0.4, i * 0.15)); },
+                bell: () => { [392, 523, 784].forEach((f, i) => playTone(f, 'triangle', 0.5, i * 0.2)); }
+            };
+            sounds[App.alarmSound]();
+        }
+
+        function startAlarmLoop() { playAlarm(); App.alarmLoop = setInterval(playAlarm, 1500); }
+        function stopAlarmLoop() { if (App.alarmLoop) { clearInterval(App.alarmLoop); App.alarmLoop = null; } }
+
+        // ==================== MOOD TRACKER ====================
+        function getTodayKey() {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        }
+
+        function canSubmitMood() {
+            const now = new Date();
+            const hour = now.getHours();
+            return hour >= 19 && hour < 24;
+        }
+
+        async function getSubmissionStatus() {
+            const today = getTodayKey();
+            try {
+                const entry = await DB.getMood(today);
+                if (entry) return { status: 'submitted', entry };
+                if (!canSubmitMood()) {
+                    const now = new Date();
+                    const nextSubmit = new Date(now);
+                    nextSubmit.setHours(19, 0, 0, 0);
+                    if (now >= nextSubmit) nextSubmit.setDate(nextSubmit.getDate() + 1);
+                    return { status: 'pending', nextSubmit };
+                }
+                return { status: 'available' };
+            } catch (e) {
+                return { status: 'error' };
+            }
+        }
+
+        async function updateMoodUI() {
+            const status = await getSubmissionStatus();
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const statusTime = document.getElementById('statusTime');
+            const moodInputSection = document.getElementById('moodInputSection');
+
+            const moodEmojis = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '🤩' };
+            const moodLabels = { 1: t('veryBad'), 2: t('bad'), 3: t('neutral'), 4: t('good'), 5: t('veryGood') };
+
+            if (status.status === 'submitted') {
+                statusIcon.textContent = moodEmojis[status.entry.moodValue] || '✅';
+                statusText.textContent = `${t('today')} ${moodLabels[status.entry.moodValue]}`;
+                statusText.style.color = 'var(--success)';
+                statusTime.textContent = `${t('submittedAt')} ${new Date(status.entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                moodInputSection.style.display = 'none';
+            } else if (status.status === 'pending') {
+                statusIcon.textContent = '⏰';
+                statusText.textContent = t('available');
+                statusText.className = 'status-text status-pending';
+                const nextTime = status.nextSubmit.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                statusTime.textContent = `${t('next')}${nextTime}`;
+                moodInputSection.style.display = 'none';
+            } else {
+                statusIcon.textContent = '📝';
+                statusText.textContent = t('rateYourDay');
+                statusText.style.color = 'var(--text)';
+                statusTime.textContent = t('selectMoodCategories');
+                moodInputSection.style.display = 'block';
+            }
+        }
+
+        // Likert selection
+        document.querySelectorAll('.likert-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                App.selectedMood = parseInt(btn.dataset.value);
+            });
+        });
+
+        // Category tags
+        document.querySelectorAll('.category-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('selected');
+                const cat = tag.dataset.tag;
+                if (App.selectedCategories.includes(cat)) {
+                    App.selectedCategories = App.selectedCategories.filter(c => c !== cat);
+                } else {
+                    App.selectedCategories.push(cat);
+                }
+            });
+        });
+
+        // Submit mood
+        document.getElementById('submitMood').addEventListener('click', async () => {
+            if (!App.selectedMood) {
+                showAlert('warning', t('selectMood'), t('selectMoodMsg'));
+                return;
+            }
+
+            const today = getTodayKey();
+            try {
+                const existing = await DB.getMood(today);
+                if (existing) {
+                    showAlert('info', t('alreadySubmitted'), t('alreadySubmittedMsg'));
+                    updateMoodUI();
+                    return;
+                }
+
+                if (!canSubmitMood()) {
+                    showAlert('warning', t('notAvailable'), t('notAvailableMsg'));
+                    return;
+                }
+
+                // Collect subcategory ratings
+                const categories = {};
+                document.querySelectorAll('.subcategory-input input').forEach(input => {
+                    const cat = input.dataset.cat;
+                    const sub = input.dataset.sub;
+                    const val = parseInt(input.value);
+                    if (!categories[cat]) categories[cat] = {};
+                    if (val >= 1 && val <= 5) categories[cat][sub] = val;
+                });
+
+                const entry = {
+                    date: today,
+                    timestamp: new Date().toISOString(),
+                    moodValue: App.selectedMood,
+                    categories: categories,
+                    reasonText: document.getElementById('moodReason').value.trim(),
+                    selectedTags: App.selectedCategories,
+                    dayOfWeek: new Date().getDay()
+                };
+
+                await DB.saveMood(entry);
+
+                const moodEmojis = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '🤩' };
+                const moodLabels = { 1: t('veryBad'), 2: t('bad'), 3: t('neutral'), 4: t('good'), 5: t('veryGood') };
+
+                showAlert('success', t('moodRecorded'), `${t('today')} ${moodLabels[App.selectedMood]} ${moodEmojis[App.selectedMood]}`);
+
+                App.selectedMood = null;
+                App.selectedCategories = [];
+                App.moodReason = '';
+                document.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('selected'));
+                document.querySelectorAll('.subcategory-input input').forEach(i => i.value = '');
+                document.getElementById('moodReason').value = '';
+
+                updateMoodUI();
+            } catch (e) {
+                showAlert('error', t('saveError'), t('saveErrorMsg'));
+                console.error(e);
+            }
+        });
+
+        // ==================== ANALYTICS ====================
+        async function updateAnalytics() {
+            try {
+                const entries = await DB.getAllMoods();
+                if (entries.length === 0) {
+                    document.getElementById('weeklySummary').innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:2rem">${t('noMoodData')}</div>`;
+                    return;
+                }
+
+                // Sort by date
+                entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                // Weekly summary
+                const now = new Date();
+                const weekAgo = new Date(now);
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                const lastWeek = new Date(now);
+                lastWeek.setDate(lastWeek.getDate() - 14);
+
+                const thisWeekEntries = entries.filter(e => new Date(e.date) >= weekAgo);
+                const lastWeekEntries = entries.filter(e => new Date(e.date) >= lastWeek && new Date(e.date) < weekAgo);
+
+                const thisWeekAvg = thisWeekEntries.length ? (thisWeekEntries.reduce((sum, e) => sum + e.moodValue, 0) / thisWeekEntries.length).toFixed(1) : '-';
+                const lastWeekAvg = lastWeekEntries.length ? lastWeekEntries.reduce((sum, e) => sum + e.moodValue, 0) / lastWeekEntries.length : null;
+
+                document.getElementById('weekAvg').textContent = thisWeekAvg !== '-' ? `${thisWeekAvg}/5` : '-';
+
+                if (lastWeekAvg !== null) {
+                    const change = ((thisWeekAvg - lastWeekAvg) / lastWeekAvg * 100).toFixed(0);
+                    const changeStr = change > 0 ? `+${change}%` : `${change}%`;
+                    document.getElementById('weekChange').textContent = changeStr;
+                    document.getElementById('weekChange').style.color = change >= 0 ? 'var(--success)' : 'var(--danger)';
+                } else {
+                    document.getElementById('weekChange').textContent = '-';
+                }
+
+                // Best and worst days this week
+                if (thisWeekEntries.length > 0) {
+                    const best = thisWeekEntries.reduce((max, e) => e.moodValue > max.moodValue ? e : max);
+                    const worst = thisWeekEntries.reduce((min, e) => e.moodValue < min.moodValue ? e : min);
+                    document.getElementById('bestDay').textContent = new Date(best.date).toLocaleDateString('en', { weekday: 'short' });
+                    document.getElementById('worstDay').textContent = new Date(worst.date).toLocaleDateString('en', { weekday: 'short' });
+                }
+
+                // Week insights
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const dayNamesId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                const dayAverages = {};
+                for (let i = 0; i < 7; i++) {
+                    const dayEntries = entries.filter(e => e.dayOfWeek === i);
+                    if (dayEntries.length > 0) {
+                        dayAverages[i] = dayEntries.reduce((sum, e) => sum + e.moodValue, 0) / dayEntries.length;
+                    }
+                }
+
+                let insights = [];
+                const weekendAvg = (dayAverages[0] + dayAverages[6]) / 2;
+                const weekdayAvg = (dayAverages[1] + dayAverages[2] + dayAverages[3] + dayAverages[4] + dayAverages[5]) / 5;
+                if (weekendAvg > weekdayAvg + 0.3) insights.push(t('moodTendsHigherWeekends'));
+                if (weekdayAvg > weekendAvg + 0.3) insights.push(t('moodTendsHigherWeekdays'));
+
+                const bestDayIdx = Object.entries(dayAverages).reduce((a, b) => dayAverages[b[0]] > dayAverages[a[0]] ? b : a);
+                if (bestDayIdx) {
+                    const dayName = currentLang === 'id' ? dayNamesId[bestDayIdx[0]] : dayNames[bestDayIdx[0]];
+                    insights.push(t('bestDayIs', { day: dayName }));
+                }
+
+                const trend = thisWeekAvg > (lastWeekAvg || thisWeekAvg) ? 'improving' : thisWeekAvg < (lastWeekAvg || thisWeekAvg) ? 'declining' : 'stable';
+                if (trend === 'improving') insights.push(t('moodImproving'));
+                if (trend === 'declining') insights.push(t('moodDeclining'));
+
+                document.getElementById('weekInsights').innerHTML = insights.join('<br>') || t('keepTracking');
+
+                // 7-day trend chart
+                const trendChart = document.getElementById('trendChart');
+                trendChart.innerHTML = '';
+                const last7Days = [];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date(now);
+                    d.setDate(d.getDate() - i);
+                    last7Days.push(d);
+                }
+                last7Days.forEach(d => {
+                    const dateKey = d.toISOString().split('T')[0];
+                    const entry = entries.find(e => e.date === dateKey);
+                    const bar = document.createElement('div');
+                    bar.className = 'trend-bar';
+                    const height = entry ? (entry.moodValue / 5) * 100 : 4;
+                    bar.style.height = `${height}%`;
+                    bar.title = `${d.toLocaleDateString('en', {weekday:'short'})}: ${entry ? entry.moodValue : t('noMoodData')}`;
+                    trendChart.appendChild(bar);
+                });
+
+                // Heatmap (28 days)
+                const heatmap = document.getElementById('heatmap');
+                heatmap.innerHTML = '';
+                for (let i = 27; i >= 0; i--) {
+                    const d = new Date(now);
+                    d.setDate(d.getDate() - i);
+                    const dateKey = d.toISOString().split('T')[0];
+                    const entry = entries.find(e => e.date === dateKey);
+                    const cell = document.createElement('div');
+                    cell.className = 'heatmap-cell' + (entry ? ` level-${entry.moodValue}` : ' empty');
+                    cell.title = `${d.toLocaleDateString()}: ${entry ? entry.moodValue + '/5' : t('noMoodData')}`;
+                    heatmap.appendChild(cell);
+                }
+
+                // Insights list
+                const insightsList = document.getElementById('insightsList');
+                insightsList.innerHTML = '';
+                const avgMood = entries.reduce((sum, e) => sum + e.moodValue, 0) / entries.length;
+                if (avgMood >= 4) {
+                    insightsList.innerHTML += `<div class="insight-item positive"><div class="insight-text">${t('avgMoodGreat', { avg: avgMood.toFixed(1) })}</div></div>`;
+                } else if (avgMood >= 3) {
+                    insightsList.innerHTML += `<div class="insight-item"><div class="insight-text">${t('avgMoodStable', { avg: avgMood.toFixed(1) })}</div></div>`;
+                } else {
+                    insightsList.innerHTML += `<div class="insight-item warning"><div class="insight-text">${t('avgMoodImprove', { avg: avgMood.toFixed(1) })}</div></div>`;
+                }
+
+                // Category averages
+                const catAverages = {};
+                entries.forEach(e => {
+                    if (e.categories) {
+                        Object.entries(e.categories).forEach(([cat, subs]) => {
+                            if (!catAverages[cat]) catAverages[cat] = [];
+                            Object.values(subs).forEach(v => catAverages[cat].push(v));
+                        });
+                    }
+                });
+
+                const catNames = { 
+                    relationships: '💞 ' + t('relationships'), 
+                    stability: '🏛️ ' + t('stability'), 
+                    mental: '🧠 ' + t('mentalState'), 
+                    physical: '💪 ' + t('physical'), 
+                    meaning: '🎯 ' + t('meaning') 
+                };
+                const catContainer = document.getElementById('categoryAverages');
+                catContainer.innerHTML = '';
+                Object.entries(catAverages).forEach(([cat, values]) => {
+                    const avg = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
+                    catContainer.innerHTML += `
+                        <div class="subcategory-item">
+                            <span class="subcategory-label">${catNames[cat] || cat}</span>
+                            <span style="color:var(--primary);font-weight:600">${avg}/5</span>
+                        </div>
+                    `;
+                });
+
+            } catch (e) {
+                console.error('Analytics error:', e);
+            }
+        }
+
+        // ==================== TIMER ====================
+        const timerTime = document.getElementById('timerTime');
+        const timerLabel = document.getElementById('timerLabel');
+        const timerToggle = document.getElementById('timerToggle');
+        const timerReset = document.getElementById('timerReset');
+        const timerProgress = document.getElementById('timerProgress');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const alarmModal = document.getElementById('alarmModal');
+        const alarmMessage = document.getElementById('alarmMessage');
+
+        function formatTime(secs) { const m = Math.floor(secs / 60).toString().padStart(2, '0'); const s = (secs % 60).toString().padStart(2, '0'); return m + ':' + s; }
+
+        function updateTimerDisplay() {
+            timerTime.textContent = formatTime(App.timeLeft);
+            document.title = App.isRunning ? formatTime(App.timeLeft) + ' - Focus' : 'Focus Dashboard';
+            const pct = ((App.totalTime - App.timeLeft) / App.totalTime) * 100;
+            timerProgress.style.width = pct + '%';
+        }
+
+        function switchMode(mins) {
+            App.currentMode = mins;
+            App.totalTime = mins * 60;
+            App.timeLeft = App.totalTime;
+            App.isRunning = false;
+            clearInterval(App.timerInterval);
+            timerToggle.textContent = '▶ Start';
+            timerToggle.classList.remove('pause');
+            timerDisplay.classList.remove('active');
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.mode) === mins);
+            });
+            const labels = { 25: '🎯 Focus Time', 5: '☕ Short Break', 15: '🌙 Long Break' };
+            timerLabel.textContent = labels[mins];
+            updateTimerDisplay();
+        }
+
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchMode(parseInt(btn.dataset.mode)));
+        });
+
+        async function logHistory(duration) {
+            try {
+                await DB.savePomodoro({ duration, date: new Date().toISOString() });
+            } catch (e) { console.error(e); }
+        }
+
+        function triggerAlarm() {
+            if (App.soundEnabled) startAlarmLoop();
+            alarmMessage.textContent = App.currentMode === 25 ? t('focusComplete') : t('breakOver');
+            alarmModal.classList.add('active');
+            if (App.notifyEnabled && Notification.permission === 'granted') {
+                new Notification(t('timesUp'), { body: alarmMessage.textContent, icon: '⏰' });
+            }
+            logHistory(App.currentMode);
+        }
+
+        timerToggle.addEventListener('click', () => {
+            initAudio();
+            if (App.isRunning) {
+                clearInterval(App.timerInterval);
+                timerToggle.textContent = '▶ Start';
+                timerToggle.classList.remove('pause');
+                timerDisplay.classList.remove('active');
+            } else {
+                timerToggle.textContent = '⏸ Pause';
+                timerToggle.classList.add('pause');
+                timerDisplay.classList.add('active');
+                App.timerInterval = setInterval(() => {
+                    App.timeLeft--;
+                    updateTimerDisplay();
+                    if (App.timeLeft <= 0) {
+                        clearInterval(App.timerInterval);
+                        App.isRunning = false;
+                        triggerAlarm();
+                        App.timeLeft = App.totalTime;
+                        updateTimerDisplay();
+                    }
+                }, 1000);
+            }
+            App.isRunning = !App.isRunning;
+        });
+
+        timerReset.addEventListener('click', () => {
+            clearInterval(App.timerInterval);
+            App.isRunning = false;
+            timerToggle.textContent = '▶ Start';
+            timerToggle.classList.remove('pause');
+            timerDisplay.classList.remove('active');
+            App.timeLeft = App.totalTime;
+            updateTimerDisplay();
+        });
+
+        document.getElementById('stopAlarm').addEventListener('click', () => { alarmModal.classList.remove('active'); stopAlarmLoop(); });
+        document.getElementById('snoozeAlarm').addEventListener('click', () => { alarmModal.classList.remove('active'); stopAlarmLoop(); switchMode(5); });
+
+        if (Notification.permission === 'default') Notification.requestPermission();
+
+        // ==================== TASKS ====================
+        let todos = JSON.parse(localStorage.getItem('todos')) || [];
+        function saveTodos() { localStorage.setItem('todos', JSON.stringify(todos)); renderTodos(); }
+        function renderTodos() {
+            const list = document.getElementById('todoList');
+            list.innerHTML = '';
+            todos.forEach((todo, i) => {
+                const li = document.createElement('li');
+                li.className = todo.completed ? 'completed' : '';
+                li.innerHTML = `<span onclick="toggleTodo(${i})" style="cursor:pointer;flex:1">${escapeHtml(todo.text)}</span><button onclick="deleteTodo(${i})">✕</button>`;
+                list.appendChild(li);
+            });
+            document.getElementById('taskCount').textContent = `${todos.filter(t => !t.completed).length}/${todos.length}`;
+        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+        window.addTodo = () => { const input = document.getElementById('todoInput'); const text = input.value.trim(); if (text) { todos.push({ text, completed: false }); input.value = ''; saveTodos(); } };
+        window.toggleTodo = (i) => { todos[i].completed = !todos[i].completed; saveTodos(); };
+        window.deleteTodo = (i) => { todos.splice(i, 1); saveTodos(); };
+        document.getElementById('addBtn').addEventListener('click', addTodo);
+        document.getElementById('todoInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodo(); });
+        document.getElementById('clearCompleted').addEventListener('click', () => { todos = todos.filter(t => !t.completed); saveTodos(); });
+        document.getElementById('clearAll').addEventListener('click', () => { if (confirm(t('deleteTasks'))) { todos = []; saveTodos(); } });
+
+        // ==================== NOTES ====================
+        const noteArea = document.getElementById('noteArea');
+        const noteStatus = document.getElementById('noteStatus');
+        let noteTimeout;
+        noteArea.value = localStorage.getItem('quickNotes') || '';
+        function saveNote() {
+            localStorage.setItem('quickNotes', noteArea.value);
+            noteStatus.textContent = t('saved');
+            noteStatus.style.color = 'var(--success)';
+            setTimeout(() => { noteStatus.textContent = ''; }, 2000);
+        }
+        document.getElementById('saveNote').addEventListener('click', saveNote);
+        document.getElementById('clearNote').addEventListener('click', () => { if (confirm(t('clearNotes'))) { noteArea.value = ''; saveNote(); } });
+        noteArea.addEventListener('input', () => { clearTimeout(noteTimeout); noteStatus.textContent = t('unsaved'); noteStatus.style.color = 'var(--warning)'; noteTimeout = setTimeout(saveNote, 1500); });
+
+        // ==================== LINKS ====================
+        let links = JSON.parse(localStorage.getItem('quickLinks')) || [{ name: 'Gmail', url: 'https://gmail.com' }, { name: 'GitHub', url: 'https://github.com' }, { name: 'YouTube', url: 'https://youtube.com' }, { name: 'Notion', url: 'https://notion.so' }];
+        function saveLinks() { localStorage.setItem('quickLinks', JSON.stringify(links)); renderLinks(); }
+        function renderLinks() {
+            const grid = document.getElementById('linksList');
+            grid.innerHTML = '';
+            links.forEach((link, i) => {
+                const div = document.createElement('div');
+                div.className = 'link-item';
+                div.innerHTML = `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener">${escapeHtml(link.name)}</a><button onclick="deleteLink(${i})">✕</button>`;
+                grid.appendChild(div);
+            });
+            document.getElementById('linkCount').textContent = links.length;
+        }
+        window.deleteLink = (i) => { links.splice(i, 1); saveLinks(); };
+        document.getElementById('addLink').addEventListener('click', () => {
+            const name = document.getElementById('linkName').value.trim();
+            let url = document.getElementById('linkUrl').value.trim();
+            if (name && url) { if (!url.startsWith('http')) url = 'https://' + url; links.push({ name, url }); document.getElementById('linkName').value = ''; document.getElementById('linkUrl').value = ''; saveLinks(); }
+        });
+
+        // ==================== SETTINGS ====================
+        function updateToggle(id, enabled) { document.getElementById(id).classList.toggle('active', enabled); }
+        updateToggle('soundToggle', App.soundEnabled);
+        updateToggle('notifyToggle', App.notifyEnabled);
+        updateToggle('particlesToggle', App.particlesEnabled);
+        updateToggle('cursorToggle', App.cursorEnabled);
+        document.getElementById('alarmSound').value = App.alarmSound;
+
+        document.getElementById('soundToggle').addEventListener('click', () => { App.soundEnabled = !App.soundEnabled; localStorage.setItem('soundEnabled', App.soundEnabled); updateToggle('soundToggle', App.soundEnabled); });
+        document.getElementById('notifyToggle').addEventListener('click', () => { App.notifyEnabled = !App.notifyEnabled; localStorage.setItem('notifyEnabled', App.notifyEnabled); updateToggle('notifyToggle', App.notifyEnabled); if (App.notifyEnabled && Notification.permission === 'default') Notification.requestPermission(); });
+        document.getElementById('particlesToggle').addEventListener('click', () => { App.particlesEnabled = !App.particlesEnabled; localStorage.setItem('particlesEnabled', App.particlesEnabled); updateToggle('particlesToggle', App.particlesEnabled); });
+        document.getElementById('cursorToggle').addEventListener('click', () => { App.cursorEnabled = !App.cursorEnabled; localStorage.setItem('cursorEnabled', App.cursorEnabled); updateToggle('cursorToggle', App.cursorEnabled); if (App.cursorEnabled && !App.isMobile) { document.querySelector('.cursor').classList.add('enabled'); document.querySelector('.cursor-dot').classList.add('enabled'); } else { document.querySelector('.cursor').classList.remove('enabled'); document.querySelector('.cursor-dot').classList.remove('enabled'); } });
+        document.getElementById('alarmSound').addEventListener('change', function() { App.alarmSound = this.value; localStorage.setItem('alarmSound', this.value); initAudio(); playAlarm(); });
+
+        document.getElementById('exportData').addEventListener('click', async () => {
+            try {
+                const moodEntries = await DB.getAllMoods();
+                const pomodoroEntries = await DB.getAllPomodoro();
+                const exportData = {
+                    moodEntries,
+                    pomodoroHistory: pomodoroEntries,
+                    todos,
+                    notes: localStorage.getItem('quickNotes'),
+                    links,
+                    settings: { theme: App.theme, colorScheme: App.colorScheme, soundEnabled: App.soundEnabled, notifyEnabled: App.notifyEnabled, language: currentLang }
+                };
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `focus-dashboard-backup-${getTodayKey()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showAlert('success', t('exportSuccess'), t('exportSuccessMsg'));
+            } catch (e) {
+                showAlert('error', t('exportFailed'), t('exportFailedMsg'));
+            }
+        });
+
+        document.getElementById('resetAll').addEventListener('click', () => {
+            showAlert('warning', t('resetConfirm'), t('resetConfirmMsg'), async () => {
+                try {
+                    const tx = DB.db.transaction(['moodEntries', 'pomodoroHistory'], 'readwrite');
+                    tx.objectStore('moodEntries').clear();
+                    tx.objectStore('pomodoroHistory').clear();
+                    localStorage.clear();
+                    showAlert('success', t('resetComplete'), t('resetCompleteMsg'));
+                    setTimeout(() => location.reload(), 1500);
+                } catch (e) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            });
+        });
+
+        // ==================== PWA ====================
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            App.deferredPrompt = e;
+            setTimeout(() => { document.getElementById('installPrompt').classList.add('show'); }, 3000);
+        });
+
+        document.getElementById('installPromptClose').addEventListener('click', () => { document.getElementById('installPrompt').classList.remove('show'); });
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (App.deferredPrompt) {
+                App.deferredPrompt.prompt();
+                await App.deferredPrompt.userChoice;
+                App.deferredPrompt = null;
+            }
+            document.getElementById('installPrompt').classList.remove('show');
+        });
+
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+
+        // ==================== INIT ====================
+        renderTodos();
+        renderLinks();
+        updateTimerDisplay();
+        applyTranslations();
+
+        if (App.isMobile || !App.cursorEnabled) {
+            document.querySelector('.cursor').classList.remove('enabled');
+            document.querySelector('.cursor-dot').classList.remove('enabled');
+        }
+
+        setInterval(updateMoodUI, 60000);
+    </script>
+</body>
+</html>
