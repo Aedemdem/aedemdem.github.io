@@ -1,0 +1,474 @@
+{
+  "moods": [
+    {
+      "date": "2026-03-03",
+      "timestamp": "2026-03-03T21:30:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 5 },
+        "stability": { "job": 4, "finances": 3, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 5 }
+      },
+      "reasonText": "Productive day at work, spent time with family",
+      "dayOfWeek": 2
+    },
+    {
+      "date": "2026-03-02",
+      "timestamp": "2026-03-02T20:15:00.000Z",
+      "moodValue": 3,
+      "categories": {
+        "relationships": { "family": 3, "friends": 3, "partner": 3 },
+        "stability": { "job": 3, "finances": 3, "balance": 2 },
+        "mental": { "mindset": 3, "stress": 4, "anxiety": 3 },
+        "physical": { "sleep": 3, "energy": 3, "health": 4 },
+        "meaning": { "goals": 3, "growth": 3, "values": 4 }
+      },
+      "reasonText": "Busy day, felt a bit overwhelmed",
+      "dayOfWeek": 1
+    },
+    {
+      "date": "2026-03-01",
+      "timestamp": "2026-03-01T22:00:00.000Z",
+      "moodValue": 5,
+      "categories": {
+        "relationships": { "family": 5, "friends": 5, "partner": 5 },
+        "stability": { "job": 5, "finances": 4, "balance": 5 },
+        "mental": { "mindset": 5, "stress": 2, "anxiety": 1 },
+        "physical": { "sleep": 5, "energy": 5, "health": 5 },
+        "meaning": { "goals": 5, "growth": 5, "values": 5 }
+      },
+      "reasonText": "Amazing Sunday! Completed a big project",
+      "dayOfWeek": 0
+    },
+    {
+      "date": "2026-02-28",
+      "timestamp": "2026-02-28T21:45:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Good day overall",
+      "dayOfWeek": 6
+    },
+    {
+      "date": "2026-02-27",
+      "timestamp": "2026-02-27T20:30:00.000Z",
+      "moodValue": 3,
+      "categories": {
+        "relationships": { "family": 3, "friends": 4, "partner": 3 },
+        "stability": { "job": 3, "finances": 3, "balance": 3 },
+        "mental": { "mindset": 3, "stress": 4, "anxiety": 4 },
+        "physical": { "sleep": 2, "energy": 3, "health": 3 },
+        "meaning": { "goals": 3, "growth": 3, "values": 4 }
+      },
+      "reasonText": "Didn't sleep well last night",
+      "dayOfWeek": 5
+    },
+    {
+      "date": "2026-02-26",
+      "timestamp": "2026-02-26T21:00:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 5, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Had lunch with friends, felt great",
+      "dayOfWeek": 4
+    },
+    {
+      "date": "2026-02-25",
+      "timestamp": "2026-02-25T22:30:00.000Z",
+      "moodValue": 2,
+      "categories": {
+        "relationships": { "family": 3, "friends": 2, "partner": 2 },
+        "stability": { "job": 2, "finances": 2, "balance": 2 },
+        "mental": { "mindset": 2, "stress": 5, "anxiety": 4 },
+        "physical": { "sleep": 2, "energy": 2, "health": 3 },
+        "meaning": { "goals": 2, "growth": 2, "values": 3 }
+      },
+      "reasonText": "Stressful day at work, many deadlines",
+      "dayOfWeek": 3
+    },
+    {
+      "date": "2026-02-24",
+      "timestamp": "2026-02-24T21:15:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 5, "friends": 4, "partner": 4 },
+        "stability": { "job": 3, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Relaxing Tuesday with family",
+      "dayOfWeek": 2
+    },
+    {
+      "date": "2026-02-23",
+      "timestamp": "2026-02-23T20:00:00.000Z",
+      "moodValue": 5,
+      "categories": {
+        "relationships": { "family": 5, "friends": 5, "partner": 5 },
+        "stability": { "job": 4, "finances": 4, "balance": 5 },
+        "mental": { "mindset": 5, "stress": 1, "anxiety": 1 },
+        "physical": { "sleep": 5, "energy": 5, "health": 5 },
+        "meaning": { "goals": 5, "growth": 5, "values": 5 }
+      },
+      "reasonText": "Weekend vibes! Went hiking",
+      "dayOfWeek": 1
+    },
+    {
+      "date": "2026-02-22",
+      "timestamp": "2026-02-22T21:30:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 3 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Friday! Looking forward to the weekend",
+      "dayOfWeek": 0
+    },
+    {
+      "date": "2026-02-21",
+      "timestamp": "2026-02-21T22:00:00.000Z",
+      "moodValue": 3,
+      "categories": {
+        "relationships": { "family": 3, "friends": 3, "partner": 3 },
+        "stability": { "job": 3, "finances": 3, "balance": 3 },
+        "mental": { "mindset": 3, "stress": 4, "anxiety": 3 },
+        "physical": { "sleep": 3, "energy": 3, "health": 3 },
+        "meaning": { "goals": 3, "growth": 3, "values": 4 }
+      },
+      "reasonText": "Average Thursday",
+      "dayOfWeek": 4
+    },
+    {
+      "date": "2026-02-20",
+      "timestamp": "2026-02-20T21:00:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Made progress on personal goals",
+      "dayOfWeek": 3
+    },
+    {
+      "date": "2026-02-19",
+      "timestamp": "2026-02-19T20:45:00.000Z",
+      "moodValue": 3,
+      "categories": {
+        "relationships": { "family": 3, "friends": 3, "partner": 3 },
+        "stability": { "job": 3, "finances": 3, "balance": 2 },
+        "mental": { "mindset": 3, "stress": 4, "anxiety": 4 },
+        "physical": { "sleep": 3, "energy": 3, "health": 3 },
+        "meaning": { "goals": 3, "growth": 3, "values": 4 }
+      },
+      "reasonText": "Work-life balance needs improvement",
+      "dayOfWeek": 2
+    },
+    {
+      "date": "2026-02-18",
+      "timestamp": "2026-02-18T21:30:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Good start to the week",
+      "dayOfWeek": 1
+    },
+    {
+      "date": "2026-02-17",
+      "timestamp": "2026-02-17T22:15:00.000Z",
+      "moodValue": 5,
+      "categories": {
+        "relationships": { "family": 5, "friends": 5, "partner": 5 },
+        "stability": { "job": 4, "finances": 4, "balance": 5 },
+        "mental": { "mindset": 5, "stress": 2, "anxiety": 2 },
+        "physical": { "sleep": 5, "energy": 5, "health": 5 },
+        "meaning": { "goals": 5, "growth": 5, "values": 5 }
+      },
+      "reasonText": "Perfect Sunday! Self-care day",
+      "dayOfWeek": 0
+    },
+    {
+      "date": "2026-02-16",
+      "timestamp": "2026-02-16T21:00:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 5, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Fun day out with friends",
+      "dayOfWeek": 6
+    },
+    {
+      "date": "2026-02-15",
+      "timestamp": "2026-02-15T20:30:00.000Z",
+      "moodValue": 5,
+      "categories": {
+        "relationships": { "family": 5, "friends": 5, "partner": 5 },
+        "stability": { "job": 4, "finances": 4, "balance": 5 },
+        "mental": { "mindset": 5, "stress": 2, "anxiety": 1 },
+        "physical": { "sleep": 5, "energy": 5, "health": 5 },
+        "meaning": { "goals": 5, "growth": 5, "values": 5 }
+      },
+      "reasonText": "Valentine's Day! Very happy",
+      "dayOfWeek": 5
+    },
+    {
+      "date": "2026-02-14",
+      "timestamp": "2026-02-14T21:45:00.000Z",
+      "moodValue": 3,
+      "categories": {
+        "relationships": { "family": 3, "friends": 3, "partner": 3 },
+        "stability": { "job": 3, "finances": 3, "balance": 3 },
+        "mental": { "mindset": 3, "stress": 4, "anxiety": 3 },
+        "physical": { "sleep": 3, "energy": 3, "health": 3 },
+        "meaning": { "goals": 3, "growth": 3, "values": 4 }
+      },
+      "reasonText": "Feeling a bit tired",
+      "dayOfWeek": 4
+    },
+    {
+      "date": "2026-02-13",
+      "timestamp": "2026-02-13T22:00:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Productive Wednesday",
+      "dayOfWeek": 3
+    },
+    {
+      "date": "2026-02-12",
+      "timestamp": "2026-02-12T21:15:00.000Z",
+      "moodValue": 3,
+      "categories": {
+        "relationships": { "family": 3, "friends": 3, "partner": 3 },
+        "stability": { "job": 3, "finances": 3, "balance": 3 },
+        "mental": { "mindset": 3, "stress": 4, "anxiety": 4 },
+        "physical": { "sleep": 3, "energy": 3, "health": 3 },
+        "meaning": { "goals": 3, "growth": 3, "values": 4 }
+      },
+      "reasonText": "Tuesday blues",
+      "dayOfWeek": 2
+    },
+    {
+      "date": "2026-02-11",
+      "timestamp": "2026-02-11T20:30:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Monday motivation!",
+      "dayOfWeek": 1
+    },
+    {
+      "date": "2026-02-10",
+      "timestamp": "2026-02-10T21:00:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 5, "friends": 4, "partner": 4 },
+        "stability": { "job": 3, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Family gathering today",
+      "dayOfWeek": 0
+    },
+    {
+      "date": "2026-02-09",
+      "timestamp": "2026-02-09T22:30:00.000Z",
+      "moodValue": 5,
+      "categories": {
+        "relationships": { "family": 5, "friends": 5, "partner": 5 },
+        "stability": { "job": 4, "finances": 4, "balance": 5 },
+        "mental": { "mindset": 5, "stress": 2, "anxiety": 2 },
+        "physical": { "sleep": 5, "energy": 5, "health": 5 },
+        "meaning": { "goals": 5, "growth": 5, "values": 5 }
+      },
+      "reasonText": "Saturday adventures!",
+      "dayOfWeek": 6
+    },
+    {
+      "date": "2026-02-08",
+      "timestamp": "2026-02-08T21:30:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 3 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "TGIF!",
+      "dayOfWeek": 5
+    },
+    {
+      "date": "2026-02-07",
+      "timestamp": "2026-02-07T20:45:00.000Z",
+      "moodValue": 3,
+      "categories": {
+        "relationships": { "family": 3, "friends": 3, "partner": 3 },
+        "stability": { "job": 3, "finances": 3, "balance": 3 },
+        "mental": { "mindset": 3, "stress": 4, "anxiety": 4 },
+        "physical": { "sleep": 3, "energy": 3, "health": 3 },
+        "meaning": { "goals": 3, "growth": 3, "values": 4 }
+      },
+      "reasonText": "Long day at the office",
+      "dayOfWeek": 4
+    },
+    {
+      "date": "2026-02-06",
+      "timestamp": "2026-02-06T21:00:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Midweek check-in, doing well",
+      "dayOfWeek": 3
+    },
+    {
+      "date": "2026-02-05",
+      "timestamp": "2026-02-05T22:15:00.000Z",
+      "moodValue": 3,
+      "categories": {
+        "relationships": { "family": 3, "friends": 3, "partner": 3 },
+        "stability": { "job": 3, "finances": 3, "balance": 3 },
+        "mental": { "mindset": 3, "stress": 4, "anxiety": 3 },
+        "physical": { "sleep": 3, "energy": 3, "health": 3 },
+        "meaning": { "goals": 3, "growth": 3, "values": 4 }
+      },
+      "reasonText": "Feeling neutral today",
+      "dayOfWeek": 2
+    },
+    {
+      "date": "2026-02-04",
+      "timestamp": "2026-02-04T21:30:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 4, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "New week, new opportunities",
+      "dayOfWeek": 1
+    },
+    {
+      "date": "2026-02-03",
+      "timestamp": "2026-02-03T20:00:00.000Z",
+      "moodValue": 5,
+      "categories": {
+        "relationships": { "family": 5, "friends": 5, "partner": 5 },
+        "stability": { "job": 4, "finances": 4, "balance": 5 },
+        "mental": { "mindset": 5, "stress": 2, "anxiety": 2 },
+        "physical": { "sleep": 5, "energy": 5, "health": 5 },
+        "meaning": { "goals": 5, "growth": 5, "values": 5 }
+      },
+      "reasonText": "Wonderful weekend day",
+      "dayOfWeek": 0
+    },
+    {
+      "date": "2026-02-02",
+      "timestamp": "2026-02-02T21:45:00.000Z",
+      "moodValue": 4,
+      "categories": {
+        "relationships": { "family": 4, "friends": 5, "partner": 4 },
+        "stability": { "job": 4, "finances": 4, "balance": 4 },
+        "mental": { "mindset": 4, "stress": 3, "anxiety": 3 },
+        "physical": { "sleep": 4, "energy": 4, "health": 4 },
+        "meaning": { "goals": 4, "growth": 4, "values": 4 }
+      },
+      "reasonText": "Starting February strong!",
+      "dayOfWeek": 6
+    }
+  ],
+  "pomodoro": [
+    { "duration": 25, "date": "2026-03-03T14:30:00.000Z" },
+    { "duration": 25, "date": "2026-03-03T15:00:00.000Z" },
+    { "duration": 25, "date": "2026-03-02T10:00:00.000Z" },
+    { "duration": 25, "date": "2026-03-02T10:30:00.000Z" },
+    { "duration": 25, "date": "2026-03-01T14:00:00.000Z" },
+    { "duration": 15, "date": "2026-02-28T09:00:00.000Z" },
+    { "duration": 25, "date": "2026-02-28T11:00:00.000Z" },
+    { "duration": 25, "date": "2026-02-27T13:00:00.000Z" },
+    { "duration": 25, "date": "2026-02-27T14:00:00.000Z" },
+    { "duration": 25, "date": "2026-02-26T10:00:00.000Z" }
+  ],
+  "gratitude": [
+    {
+      "entries": ["Good health", "Supportive family", "New learning opportunities"],
+      "timestamp": "2026-03-03T21:30:00.000Z"
+    },
+    {
+      "entries": ["Warm bed", "Delicious coffee", "Kind words from a friend"],
+      "timestamp": "2026-03-02T20:15:00.000Z"
+    },
+    {
+      "entries": ["Project completion", "Team support", "Beautiful sunset"],
+      "timestamp": "2026-03-01T22:00:00.000Z"
+    },
+    {
+      "entries": ["Peaceful morning", "Productive day", "Good book"],
+      "timestamp": "2026-02-28T21:45:00.000Z"
+    },
+    {
+      "entries": ["Understanding partner", "Comfortable home", "Fresh air"],
+      "timestamp": "2026-02-27T20:30:00.000Z"
+    }
+  ],
+  "todos": [
+    { "text": "Complete project proposal", "completed": true },
+    { "text": "Schedule dentist appointment", "completed": false },
+    { "text": "Buy groceries", "completed": false },
+    { "text": "Call mom", "completed": true },
+    { "text": "Review quarterly goals", "completed": false }
+  ],
+  "settings": {
+    "theme": "blue",
+    "colorScheme": "dark",
+    "language": "en",
+    "soundEnabled": true,
+    "notifyEnabled": true,
+    "alarmSound": "digital"
+  },
+  "exportDate": "2026-03-03T00:00:00.000Z"
+}

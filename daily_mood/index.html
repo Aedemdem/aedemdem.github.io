@@ -2,780 +2,20 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="theme-color" content="#09090b" />
-        <title>Focus Dashboard</title>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-            rel="stylesheet"
-        />
-        <style>
-            :root {
-                --background: 240 10% 4%;
-                --foreground: 0 0% 98%;
-                --card: 240 10% 6%;
-                --primary: 199 89% 48%;
-                --primary-foreground: 0 0% 100%;
-                --secondary: 240 4% 16%;
-                --secondary-foreground: 0 0% 98%;
-                --muted: 240 5% 26%;
-                --muted-foreground: 240 5% 65%;
-                --accent: 240 4% 16%;
-                --destructive: 0 84% 60%;
-                --border: 240 4% 16%;
-                --input: 240 4% 16%;
-                --ring: 199 89% 48%;
-                --radius: 0.75rem;
-                --success: 142 76% 36%;
-            }
-
-            [data-theme="pink"] {
-                --primary: 330 81% 60%;
-                --ring: 330 81% 60%;
-            }
-            [data-theme="green"] {
-                --primary: 142 76% 36%;
-                --ring: 142 76% 36%;
-            }
-
-            [data-color-scheme="light"] {
-                --background: 0 0% 100%;
-                --foreground: 240 10% 3%;
-                --card: 0 0% 100%;
-                --secondary: 240 5% 96%;
-                --muted: 240 5% 96%;
-                --accent: 240 5% 96%;
-                --border: 240 6% 90%;
-                --input: 240 6% 90%;
-                --muted-foreground: 240 4% 46%;
-                --primary-foreground: 0 0% 100%;
-                --destructive-foreground: 0 0% 98%;
-                --secondary-foreground: 240 6% 10%;
-                --accent-foreground: 240 6% 10%;
-            }
-
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                background: hsl(var(--background));
-                color: hsl(var(--foreground));
-                font-family: "Inter", system-ui, sans-serif;
-                overflow: hidden;
-                height: 100vh;
-                display: grid;
-                place-items: center;
-            }
-
-            canvas {
-                position: absolute;
-                top: 0;
-                left: 0;
-                z-index: 0;
-                pointer-events: none;
-            }
-
-            .card {
-                position: relative;
-                z-index: 1;
-                width: 95%;
-                max-width: 580px;
-                height: 92vh;
-                background: hsl(var(--card));
-                border: 1px solid hsl(var(--border));
-                border-radius: var(--radius);
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-            }
-
-            @media (max-width: 480px) {
-                .card {
-                    width: 100%;
-                    height: 100vh;
-                    border-radius: 0;
-                    border: none;
-                }
-            }
-
-            .header {
-                padding: 1rem 1.25rem;
-                border-bottom: 1px solid hsl(var(--border));
-                flex-shrink: 0;
-            }
-            .header-top {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 0.75rem;
-            }
-            .greeting {
-                font-size: 0.75rem;
-                color: hsl(var(--muted-foreground));
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                font-weight: 500;
-            }
-
-            .theme-toggle {
-                display: flex;
-                gap: 0.375rem;
-            }
-            .theme-btn {
-                width: 28px;
-                height: 28px;
-                border-radius: 6px;
-                border: 1px solid hsl(var(--border));
-                cursor: pointer;
-                background: hsl(var(--background));
-                color: hsl(var(--foreground));
-                font-size: 0.875rem;
-                transition: all 0.2s ease;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .theme-btn:hover {
-                background: hsl(var(--accent));
-                border-color: hsl(var(--ring));
-            }
-            .theme-btn.active {
-                background: hsl(var(--primary));
-                color: hsl(var(--primary-foreground));
-                border-color: hsl(var(--primary));
-            }
-
-            .clock-date {
-                display: flex;
-                align-items: baseline;
-                gap: 0.75rem;
-            }
-            h1 {
-                font-size: 2.5rem;
-                font-weight: 300;
-                letter-spacing: -1px;
-                color: hsl(var(--foreground));
-                line-height: 1;
-            }
-            .date {
-                color: hsl(var(--muted-foreground));
-                font-size: 0.8rem;
-            }
-
-            .tabs {
-                display: flex;
-                padding: 0 1.25rem;
-                border-bottom: 1px solid hsl(var(--border));
-                overflow-x: auto;
-                flex-shrink: 0;
-            }
-            .tabs::-webkit-scrollbar {
-                display: none;
-            }
-            .tab-btn {
-                flex: 1;
-                min-width: 70px;
-                background: transparent;
-                border: none;
-                border-bottom: 2px solid transparent;
-                color: hsl(var(--muted-foreground));
-                padding: 0.75rem 0.5rem;
-                font-size: 0.8rem;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                font-weight: 500;
-                white-space: nowrap;
-            }
-            .tab-btn:hover {
-                color: hsl(var(--foreground));
-            }
-            .tab-btn.active {
-                color: hsl(var(--primary));
-                border-bottom-color: hsl(var(--primary));
-            }
-
-            .tab-content {
-                display: none;
-                flex: 1;
-                overflow-y: auto;
-                padding: 1.25rem;
-            }
-            .tab-content.active {
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.5rem;
-                padding: 0.625rem 1rem;
-                font-size: 0.875rem;
-                font-weight: 500;
-                border-radius: calc(var(--radius) - 2px);
-                border: none;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                font-family: inherit;
-            }
-            .btn:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-            .btn-primary {
-                background: hsl(var(--primary));
-                color: hsl(var(--primary-foreground));
-            }
-            .btn-primary:hover {
-                opacity: 0.9;
-                transform: translateY(-1px);
-            }
-            .btn-secondary {
-                background: hsl(var(--secondary));
-                color: hsl(var(--secondary-foreground));
-            }
-            .btn-secondary:hover {
-                background: hsl(var(--accent));
-            }
-            .btn-outline {
-                background: transparent;
-                border: 1px solid hsl(var(--border));
-                color: hsl(var(--foreground));
-            }
-            .btn-outline:hover {
-                background: hsl(var(--accent));
-            }
-            .btn-destructive {
-                background: hsl(var(--destructive));
-                color: hsl(var(--destructive-foreground));
-            }
-            .btn-sm {
-                padding: 0.375rem 0.75rem;
-                font-size: 0.8rem;
-            }
-            .btn-icon {
-                padding: 0.625rem;
-                min-width: 40px;
-            }
-
-            .input {
-                flex: 1;
-                background: hsl(var(--background));
-                border: 1px solid hsl(var(--input));
-                color: hsl(var(--foreground));
-                padding: 0.625rem 0.875rem;
-                border-radius: calc(var(--radius) - 2px);
-                font-size: 0.875rem;
-                font-family: inherit;
-            }
-            .input:focus {
-                border-color: hsl(var(--ring));
-                box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
-            }
-            .input::placeholder {
-                color: hsl(var(--muted-foreground));
-            }
-
-            .textarea {
-                background: hsl(var(--background));
-                border: 1px solid hsl(var(--input));
-                color: hsl(var(--foreground));
-                padding: 0.75rem 0.875rem;
-                border-radius: calc(var(--radius) - 2px);
-                font-size: 0.875rem;
-                font-family: inherit;
-                resize: none;
-                min-height: 80px;
-            }
-            .textarea:focus {
-                border-color: hsl(var(--ring));
-                box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
-            }
-
-            .select {
-                background: hsl(var(--background));
-                border: 1px solid hsl(var(--input));
-                color: hsl(var(--foreground));
-                padding: 0.625rem 2.5rem 0.625rem 0.875rem;
-                border-radius: calc(var(--radius) - 2px);
-                font-size: 0.875rem;
-                font-family: inherit;
-                cursor: pointer;
-                appearance: none;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/svg%3E");
-                background-repeat: no-repeat;
-                background-position: right 0.75rem center;
-                background-size: 16px;
-            }
-            .select:focus {
-                border-color: hsl(var(--ring));
-            }
-            .select option {
-                background: hsl(var(--background));
-                color: hsl(var(--foreground));
-            }
-
-            .card-shadcn {
-                background: hsl(var(--card));
-                border: 1px solid hsl(var(--border));
-                border-radius: var(--radius);
-                padding: 1rem;
-            }
-            .badge {
-                display: inline-flex;
-                align-items: center;
-                padding: 0.25rem 0.625rem;
-                font-size: 0.75rem;
-                font-weight: 500;
-                border-radius: 9999px;
-                background: hsl(var(--secondary));
-                color: hsl(var(--secondary-foreground));
-            }
-            .badge-primary {
-                background: hsl(var(--primary));
-                color: hsl(var(--primary-foreground));
-            }
-
-            .switch {
-                position: relative;
-                width: 44px;
-                height: 24px;
-                background: hsl(var(--input));
-                border-radius: 9999px;
-                cursor: pointer;
-                transition: background 0.2s ease;
-            }
-            .switch.active {
-                background: hsl(var(--primary));
-            }
-            .switch::after {
-                content: "";
-                position: absolute;
-                top: 2px;
-                left: 2px;
-                width: 20px;
-                height: 20px;
-                background: white;
-                border-radius: 50%;
-                transition: transform 0.2s ease;
-            }
-            .switch.active::after {
-                transform: translateX(20px);
-            }
-
-            ul {
-                list-style: none;
-                max-height: 200px;
-                overflow-y: auto;
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            li {
-                background: hsl(var(--background));
-                padding: 0.75rem 0.875rem;
-                border-radius: calc(var(--radius) - 2px);
-                border: 1px solid hsl(var(--border));
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                font-size: 0.875rem;
-                gap: 0.5rem;
-            }
-            li:hover {
-                background: hsl(var(--accent));
-            }
-            li.completed {
-                opacity: 0.6;
-            }
-            li.completed span {
-                text-decoration: line-through;
-                color: hsl(var(--muted-foreground));
-            }
-
-            .timer-display {
-                text-align: center;
-                padding: 2rem;
-                background: hsl(var(--background));
-                border-radius: var(--radius);
-                border: 1px solid hsl(var(--border));
-            }
-            .timer-time {
-                font-size: 4rem;
-                font-weight: 300;
-                font-variant-numeric: tabular-nums;
-                letter-spacing: -2px;
-                color: hsl(var(--foreground));
-                line-height: 1;
-            }
-            .timer-label {
-                color: hsl(var(--muted-foreground));
-                font-size: 0.75rem;
-                margin-top: 0.5rem;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-            .timer-progress {
-                width: 100%;
-                height: 3px;
-                background: hsl(var(--border));
-                border-radius: 9999px;
-                margin-top: 1rem;
-                overflow: hidden;
-            }
-            .timer-progress-bar {
-                height: 100%;
-                background: hsl(var(--primary));
-                transition: width 1s linear;
-            }
-            .timer-modes {
-                display: flex;
-                gap: 0.5rem;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .likert-scale {
-                display: flex;
-                justify-content: space-between;
-                gap: 0.5rem;
-                padding: 0.5rem 0;
-            }
-            .likert-item {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 0.375rem;
-            }
-            .likert-btn {
-                width: 52px;
-                height: 52px;
-                border-radius: calc(var(--radius) - 2px);
-                border: 2px solid hsl(var(--border));
-                background: hsl(var(--background));
-                color: hsl(var(--foreground));
-                font-size: 1.5rem;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .likert-btn:hover {
-                border-color: hsl(var(--primary));
-                background: hsl(var(--accent));
-                transform: scale(1.05);
-            }
-            .likert-btn.selected {
-                border-color: hsl(var(--primary));
-                background: hsl(var(--primary));
-                box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
-            }
-            .likert-label {
-                font-size: 0.625rem;
-                color: hsl(var(--muted-foreground));
-                text-align: center;
-            }
-
-            .category-section {
-                background: hsl(var(--background));
-                border-radius: calc(var(--radius) - 2px);
-                border: 1px solid hsl(var(--border));
-                padding: 0.875rem;
-                margin-bottom: 0.75rem;
-            }
-            .category-header {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                margin-bottom: 0.75rem;
-                padding-bottom: 0.5rem;
-                border-bottom: 1px solid hsl(var(--border));
-            }
-            .category-icon {
-                font-size: 1.125rem;
-            }
-            .category-title {
-                font-size: 0.8rem;
-                font-weight: 600;
-            }
-            .category-desc {
-                font-size: 0.65rem;
-                color: hsl(var(--muted-foreground));
-                margin-left: auto;
-            }
-            .subcategory-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem 0;
-            }
-            .subcategory-label {
-                font-size: 0.75rem;
-            }
-            .subcategory-input {
-                display: flex;
-                align-items: center;
-                gap: 0.375rem;
-            }
-            .subcategory-input input {
-                width: 50px;
-                padding: 0.25rem;
-                font-size: 0.8rem;
-                text-align: center;
-                background: hsl(var(--background));
-                border: 1px solid hsl(var(--input));
-                border-radius: 4px;
-                color: hsl(var(--foreground));
-            }
-            .subcategory-input span {
-                font-size: 0.65rem;
-                color: hsl(var(--muted-foreground));
-            }
-
-            /* Star Rating */
-            .star-rating {
-                display: flex;
-                gap: 2px;
-            }
-            .star-rating .star {
-                font-size: 1.25rem;
-                color: hsl(var(--border));
-                cursor: pointer;
-                transition: all 0.15s ease;
-            }
-            .star-rating .star:hover,
-            .star-rating .star.active {
-                color: hsl(38, 92%, 50%);
-                transform: scale(1.1);
-            }
-
-            .stats-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.75rem;
-            }
-            .stat-card {
-                background: hsl(var(--background));
-                padding: 1rem;
-                border-radius: calc(var(--radius) - 2px);
-                border: 1px solid hsl(var(--border));
-                text-align: center;
-            }
-            .stat-value {
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: hsl(var(--primary));
-            }
-            .stat-label {
-                font-size: 0.65rem;
-                color: hsl(var(--muted-foreground));
-                text-transform: uppercase;
-                margin-top: 0.25rem;
-            }
-            .trend-chart {
-                height: 100px;
-                display: flex;
-                align-items: flex-end;
-                justify-content: space-between;
-                gap: 4px;
-                padding: 0.5rem 0;
-            }
-            .trend-bar {
-                flex: 1;
-                background: hsl(var(--primary));
-                border-radius: 4px 4px 0 0;
-                min-height: 4px;
-            }
-            .heatmap {
-                display: grid;
-                grid-template-columns: repeat(7, 1fr);
-                gap: 3px;
-                padding: 0.5rem 0;
-            }
-            .heatmap-cell {
-                aspect-ratio: 1;
-                border-radius: 3px;
-                background: hsl(217 33% 17%);
-            }
-            .heatmap-cell.level-1 {
-                background: hsl(217 33% 17%);
-            }
-            .heatmap-cell.level-2 {
-                background: hsl(201 64% 31%);
-            }
-            .heatmap-cell.level-3 {
-                background: hsl(199 89% 48%);
-            }
-            .heatmap-cell.level-4 {
-                background: hsl(174 72% 56%);
-            }
-            .heatmap-cell.level-5 {
-                background: hsl(142 76% 36%);
-            }
-            .heatmap-cell.empty {
-                background: hsl(var(--border));
-            }
-
-            .game-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 1.5rem;
-                padding: 1rem;
-            }
-            .breathing-circle {
-                width: 180px;
-                height: 180px;
-                border-radius: 50%;
-                background: radial-gradient(
-                    circle,
-                    hsl(var(--primary) / 0.3) 0%,
-                    hsl(var(--primary) / 0.1) 70%
-                );
-                border: 2px solid hsl(var(--primary));
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1rem;
-                font-weight: 500;
-                color: hsl(var(--primary));
-                box-shadow: 0 0 40px hsl(var(--primary) / 0.3);
-            }
-            .breathing-circle.inhale {
-                animation: breatheIn 4s ease-in-out forwards;
-            }
-            .breathing-circle.hold {
-                animation: none;
-                transform: scale(1.3);
-                box-shadow: 0 0 60px hsl(var(--primary) / 0.5);
-            }
-            .breathing-circle.exhale {
-                animation: breatheOut 4s ease-in-out forwards;
-            }
-            @keyframes breatheIn {
-                from {
-                    transform: scale(1);
-                }
-                to {
-                    transform: scale(1.3);
-                    box-shadow: 0 0 60px hsl(var(--primary) / 0.5);
-                }
-            }
-            @keyframes breatheOut {
-                from {
-                    transform: scale(1.3);
-                    box-shadow: 0 0 60px hsl(var(--primary) / 0.5);
-                }
-                to {
-                    transform: scale(1);
-                    box-shadow: 0 0 40px hsl(var(--primary) / 0.3);
-                }
-            }
-            .game-stats {
-                display: flex;
-                gap: 1.5rem;
-                text-align: center;
-            }
-            .game-stat {
-                text-align: center;
-            }
-            .game-stat-value {
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: hsl(var(--foreground));
-            }
-            .game-stat-label {
-                font-size: 0.65rem;
-                color: hsl(var(--muted-foreground));
-                text-transform: uppercase;
-            }
-            .gratitude-list {
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-                max-height: 150px;
-                overflow-y: auto;
-            }
-            .gratitude-item {
-                background: hsl(var(--background));
-                padding: 0.75rem;
-                border-radius: calc(var(--radius) - 2px);
-                border: 1px solid hsl(var(--border));
-                font-size: 0.8rem;
-            }
-            .separator {
-                height: 1px;
-                background: hsl(var(--border));
-                margin: 0.75rem 0;
-            }
-
-            .modal-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.8);
-                backdrop-filter: blur(4px);
-                z-index: 10000;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                padding: 1rem;
-            }
-            .modal-overlay.active {
-                display: flex;
-            }
-            .modal {
-                background: hsl(var(--card));
-                border: 1px solid hsl(var(--border));
-                border-radius: var(--radius);
-                padding: 1.5rem;
-                text-align: center;
-                max-width: 380px;
-                width: 100%;
-            }
-            .modal-icon {
-                font-size: 3rem;
-                margin-bottom: 0.75rem;
-            }
-            .modal-title {
-                font-size: 1.25rem;
-                font-weight: 600;
-                margin-bottom: 0.5rem;
-            }
-            .modal-message {
-                color: hsl(var(--muted-foreground));
-                margin-bottom: 1.25rem;
-                line-height: 1.5;
-            }
-            .modal-buttons {
-                display: flex;
-                gap: 0.5rem;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            @media (max-width: 400px) {
-                h1 {
-                    font-size: 2rem;
-                }
-                .timer-time {
-                    font-size: 3rem;
-                }
-                .likert-btn {
-                    width: 44px;
-                    height: 44px;
-                }
-            }
-        </style>
+        <meta name="description" content="Focus Dashboard Pro - Mood tracking, analytics, and productivity tools">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Focus Pro">
+        <title>Focus Dashboard Pro</title>
+        <link rel="stylesheet" href="styles.css" />
+        <link rel="manifest" href="manifest.json" />
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300d4ff'/%3E%3Cstop offset='100%25' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='120' fill='url(%23g)'/%3E%3Ctext x='256' y='310' font-family='Arial' font-size='180' font-weight='bold' fill='white' text-anchor='middle'%3E📊%3C/text%3E%3C/svg%3E">
+        <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300d4ff'/%3E%3Cstop offset='100%25' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='120' fill='url(%23g)'/%3E%3Ctext x='256' y='310' font-family='Arial' font-size='180' font-weight='bold' fill='white' text-anchor='middle'%3E📊%3C/text%3E%3C/svg%3E">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <!-- Chart.js for professional charts -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     </head>
     <body>
         <canvas id="canvas"></canvas>
@@ -784,44 +24,13 @@
                 <div class="header-top">
                     <div class="greeting" id="greeting">Good morning</div>
                     <div class="theme-toggle">
-                        <button
-                            class="theme-btn"
-                            data-theme="blue"
-                            title="Blue Theme"
-                        >
-                            🔵
-                        </button>
-                        <button
-                            class="theme-btn"
-                            data-theme="pink"
-                            title="Pink Theme"
-                        >
-                            🌸
-                        </button>
-                        <button
-                            class="theme-btn"
-                            data-theme="green"
-                            title="Green Theme"
-                        >
-                            🌿
-                        </button>
+                        <button class="theme-btn" data-color="dark" title="Dark Mode">🌙</button>
+                        <button class="theme-btn" data-color="light" title="Light Mode">☀️</button>
                     </div>
-                    <div class="theme-toggle">
-                        <button
-                            class="theme-btn"
-                            data-color="dark"
-                            title="Dark Mode"
-                        >
-                            🌙
-                        </button>
-                        <button
-                            class="theme-btn"
-                            data-color="light"
-                            title="Light Mode"
-                        >
-                            ☀️
-                        </button>
-                    </div>
+                </div>
+                <!-- GIF Placeholder -->
+                <div class="gif-placeholder" id="gifPlaceholder">
+                    <img src="asset/mood-animation.gif" alt="Mood Animation" id="headerGif" onerror="this.style.display='none'" />
                 </div>
                 <div class="clock-date">
                     <h1 id="clock">00:00</h1>
@@ -842,2656 +51,551 @@
             <div class="tab-content active" id="tab-monitor">
                 <div class="card-shadcn">
                     <div style="text-align: center; margin-bottom: 1rem">
-                        <h2
-                            style="
-                                font-size: 1.125rem;
-                                font-weight: 600;
-                                margin-bottom: 0.25rem;
-                            "
-                            data-i18n="howAreYou"
-                        >
+                        <h2 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem" data-i18n="howAreYou">
                             How are you feeling?
                         </h2>
-                        <p
-                            style="
-                                font-size: 0.75rem;
-                                color: hsl(var(--muted-foreground));
-                            "
-                            data-i18n="trackDaily"
-                        >
-                            Track your mood daily (19:00 - 23:59)
+                        <p style="font-size: 0.75rem; color: hsl(var(--muted-foreground))" data-i18n="trackDaily">
+                            Track your mood daily (once per day)
                         </p>
                     </div>
-                    <div
-                        class="card-shadcn"
-                        id="moodStatus"
-                        style="text-align: center; margin-bottom: 1rem"
-                    >
-                        <div
-                            style="font-size: 2.5rem; margin-bottom: 0.5rem"
-                            id="statusIcon"
-                        >
-                            ⏰
-                        </div>
-                        <div
-                            style="font-size: 0.875rem; font-weight: 500"
-                            id="statusText"
-                        >
-                            Loading...
-                        </div>
-                        <div
-                            style="
-                                font-size: 0.7rem;
-                                color: hsl(var(--muted-foreground));
-                                margin-top: 0.25rem;
-                            "
-                            id="statusTime"
-                        ></div>
+                    <div class="card-shadcn" id="moodStatus" style="text-align: center; margin-bottom: 1rem">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem" id="statusIcon">📝</div>
+                        <div style="font-size: 0.875rem; font-weight: 500" id="statusText">Track your mood daily</div>
+                        <div style="font-size: 0.7rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem" id="statusTime"></div>
                     </div>
-                    <div id="moodInputSection" style="display: none">
+                    <div id="moodInputSection" style="display: block">
                         <div class="likert-scale">
                             <div class="likert-item">
-                                <button class="likert-btn" data-value="1">
-                                    😞</button
-                                ><span class="likert-label" data-i18n="veryBad"
-                                    >Very Bad</span
-                                >
+                                <button class="likert-btn" data-value="1">😞</button>
+                                <span class="likert-label" data-i18n="veryBad">Very Bad</span>
                             </div>
                             <div class="likert-item">
-                                <button class="likert-btn" data-value="2">
-                                    😕</button
-                                ><span class="likert-label" data-i18n="bad"
-                                    >Bad</span
-                                >
+                                <button class="likert-btn" data-value="2">😕</button>
+                                <span class="likert-label" data-i18n="bad">Bad</span>
                             </div>
                             <div class="likert-item">
-                                <button class="likert-btn" data-value="3">
-                                    😐</button
-                                ><span class="likert-label" data-i18n="neutral"
-                                    >Neutral</span
-                                >
+                                <button class="likert-btn" data-value="3">😐</button>
+                                <span class="likert-label" data-i18n="neutral">Neutral</span>
                             </div>
                             <div class="likert-item">
-                                <button class="likert-btn" data-value="4">
-                                    🙂</button
-                                ><span class="likert-label" data-i18n="good"
-                                    >Good</span
-                                >
+                                <button class="likert-btn" data-value="4">🙂</button>
+                                <span class="likert-label" data-i18n="good">Good</span>
                             </div>
                             <div class="likert-item">
-                                <button class="likert-btn" data-value="5">
-                                    🤩</button
-                                ><span class="likert-label" data-i18n="veryGood"
-                                    >Very Good</span
-                                >
+                                <button class="likert-btn" data-value="5">🤩</button>
+                                <span class="likert-label" data-i18n="veryGood">Very Good</span>
                             </div>
                         </div>
                         <div class="separator"></div>
                         <div style="margin-top: 0.75rem">
                             <div class="category-section">
                                 <div class="category-header">
-                                    <span class="category-icon">💞</span
-                                    ><span
-                                        class="category-title"
-                                        data-i18n="relationships"
-                                        >Relationships</span
-                                    ><span
-                                        class="category-desc"
-                                        data-i18n="connection"
-                                        >Connection</span
-                                    >
+                                    <span class="category-icon">💞</span>
+                                    <span class="category-title" data-i18n="relationships">Relationships</span>
+                                    <span class="category-desc" data-i18n="connection">Connection</span>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="family"
-                                        >Family</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="relationships"
-                                        data-sub="family"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="family">Family</span>
+                                    <div class="star-rating" data-cat="relationships" data-sub="family">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="friends"
-                                        >Friends</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="relationships"
-                                        data-sub="friends"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="friends">Friends</span>
+                                    <div class="star-rating" data-cat="relationships" data-sub="friends">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="partner"
-                                        >Rekan kerja</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="relationships"
-                                        data-sub="partner"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="partner">Partner</span>
+                                    <div class="star-rating" data-cat="relationships" data-sub="partner">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="category-section">
                                 <div class="category-header">
-                                    <span class="category-icon">🏛️</span
-                                    ><span
-                                        class="category-title"
-                                        data-i18n="stability"
-                                        >Stability</span
-                                    ><span
-                                        class="category-desc"
-                                        data-i18n="security"
-                                        >Security</span
-                                    >
+                                    <span class="category-icon">🏛️</span>
+                                    <span class="category-title" data-i18n="stability">Stability</span>
+                                    <span class="category-desc" data-i18n="security">Security</span>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="workStudy"
-                                        >Work/Study</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="stability"
-                                        data-sub="job"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="workStudy">Work/Study</span>
+                                    <div class="star-rating" data-cat="stability" data-sub="job">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="finances"
-                                        >Finances</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="stability"
-                                        data-sub="finances"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="finances">Finances</span>
+                                    <div class="star-rating" data-cat="stability" data-sub="finances">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="workLife"
-                                        >Work-Life</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="stability"
-                                        data-sub="balance"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="workLife">Work-Life</span>
+                                    <div class="star-rating" data-cat="stability" data-sub="balance">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="category-section">
                                 <div class="category-header">
-                                    <span class="category-icon">🧠</span
-                                    ><span
-                                        class="category-title"
-                                        data-i18n="mental"
-                                        >Mental</span
-                                    ><span
-                                        class="category-desc"
-                                        data-i18n="mindset"
-                                        >Mindset</span
-                                    >
+                                    <span class="category-icon">🧠</span>
+                                    <span class="category-title" data-i18n="mental">Mental</span>
+                                    <span class="category-desc" data-i18n="mindset">Mindset</span>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="mindset"
-                                        >Mindset</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="mental"
-                                        data-sub="mindset"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="mindset">Mindset</span>
+                                    <div class="star-rating" data-cat="mental" data-sub="mindset">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="stress"
-                                        >Stress</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="mental"
-                                        data-sub="stress"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="stress">Stress</span>
+                                    <div class="star-rating" data-cat="mental" data-sub="stress">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="anxiety"
-                                        >Anxiety</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="mental"
-                                        data-sub="anxiety"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="anxiety">Anxiety</span>
+                                    <div class="star-rating" data-cat="mental" data-sub="anxiety">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="category-section">
                                 <div class="category-header">
-                                    <span class="category-icon">💪</span
-                                    ><span
-                                        class="category-title"
-                                        data-i18n="physical"
-                                        >Physical</span
-                                    ><span
-                                        class="category-desc"
-                                        data-i18n="health"
-                                        >Health</span
-                                    >
+                                    <span class="category-icon">💪</span>
+                                    <span class="category-title" data-i18n="physical">Physical</span>
+                                    <span class="category-desc" data-i18n="health">Health</span>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="sleep"
-                                        >Sleep</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="physical"
-                                        data-sub="sleep"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="sleep">Sleep</span>
+                                    <div class="star-rating" data-cat="physical" data-sub="sleep">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="energy"
-                                        >Energy</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="physical"
-                                        data-sub="energy"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="energy">Energy</span>
+                                    <div class="star-rating" data-cat="physical" data-sub="energy">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="exercise"
-                                        >Exercise</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="physical"
-                                        data-sub="exercise"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="health">Health</span>
+                                    <div class="star-rating" data-cat="physical" data-sub="health">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="category-section">
                                 <div class="category-header">
-                                    <span class="category-icon">🎯</span
-                                    ><span
-                                        class="category-title"
-                                        data-i18n="meaning"
-                                        >Meaning</span
-                                    ><span
-                                        class="category-desc"
-                                        data-i18n="purpose"
-                                        >Purpose</span
-                                    >
+                                    <span class="category-icon">🎯</span>
+                                    <span class="category-title" data-i18n="meaning">Meaning</span>
+                                    <span class="category-desc" data-i18n="purpose">Purpose</span>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="goals"
-                                        >Goals</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="meaning"
-                                        data-sub="goals"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="goals">Goals</span>
+                                    <div class="star-rating" data-cat="meaning" data-sub="goals">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="growth"
-                                        >Growth</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="meaning"
-                                        data-sub="growth"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="growth">Growth</span>
+                                    <div class="star-rating" data-cat="meaning" data-sub="growth">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                                 <div class="subcategory-item">
-                                    <span
-                                        class="subcategory-label"
-                                        data-i18n="purpose"
-                                        >Purpose</span
-                                    >
-                                    <div
-                                        class="star-rating"
-                                        data-cat="meaning"
-                                        data-sub="purpose"
-                                    >
-                                        <span class="star" data-value="1"
-                                            >★</span
-                                        ><span class="star" data-value="2"
-                                            >★</span
-                                        ><span class="star" data-value="3"
-                                            >★</span
-                                        ><span class="star" data-value="4"
-                                            >★</span
-                                        ><span class="star" data-value="5"
-                                            >★</span
-                                        >
+                                    <span class="subcategory-label" data-i18n="values">Values</span>
+                                    <div class="star-rating" data-cat="meaning" data-sub="values">
+                                        <span class="star" data-value="1">★</span>
+                                        <span class="star" data-value="2">★</span>
+                                        <span class="star" data-value="3">★</span>
+                                        <span class="star" data-value="4">★</span>
+                                        <span class="star" data-value="5">★</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <textarea
-                            class="textarea"
-                            id="moodReason"
-                            data-i18n-placeholder="whatMadeYouFeel"
-                            placeholder="What made you feel this way today? (optional)"
-                            style="margin-top: 0.75rem"
-                        ></textarea>
-                        <button
-                            class="btn btn-primary"
-                            id="submitMood"
-                            style="width: 100%; margin-top: 1rem"
-                            data-i18n="submitMood"
-                        >
-                            Submit Today's Mood
+                        <div class="separator"></div>
+                        <textarea id="moodReason" class="textarea" data-i18n-placeholder="notes" placeholder="Notes (optional)" style="width: 100%; margin-top: 0.75rem"></textarea>
+                        <button id="submitMood" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem" data-i18n="submitMood">
+                            Submit Mood
                         </button>
                     </div>
+                </div>
+                
+                <!-- Mood History -->
+                <div class="card-shadcn" style="margin-top: 1rem">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem" data-i18n="moodHistory">Mood History</h3>
+                    <div id="moodHistoryList"></div>
+                    <div id="moodHistoryPagination"></div>
                 </div>
             </div>
 
             <!-- ANALYTICS -->
             <div class="tab-content" id="tab-analytics">
-                <div class="card-shadcn">
-                    <h3
-                        style="
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin-bottom: 1rem;
-                        "
-                        data-i18n="weeklySummary"
-                    >
-                        Weekly Summary
-                    </h3>
-                    <div class="stats-grid" id="weeklyStats">
-                        <div class="stat-card">
-                            <div class="stat-value" id="weekAvg">-</div>
-                            <div class="stat-label" data-i18n="avgMood">
-                                Avg Mood
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="weekChange">-</div>
-                            <div class="stat-label" data-i18n="vsLastWeek">
-                                vs Last Week
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="bestDay">-</div>
-                            <div class="stat-label" data-i18n="bestDay">
-                                Best Day
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="worstDay">-</div>
-                            <div class="stat-label" data-i18n="worstDay">
-                                Worst Day
-                            </div>
-                        </div>
+                <!-- Date Range Selector -->
+                <div class="card-shadcn" style="margin-bottom: 1rem">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">📅 Date Range</h3>
+                    
+                    <!-- Quick Filter Buttons -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline btn-sm time-filter" data-days="7" style="flex: 1; min-width: 70px;">7 Days</button>
+                        <button class="btn btn-outline btn-sm time-filter" data-days="30" style="flex: 1; min-width: 70px;">30 Days</button>
+                        <button class="btn btn-outline btn-sm time-filter" data-days="90" style="flex: 1; min-width: 70px;">90 Days</button>
+                        <button class="btn btn-outline btn-sm time-filter" data-days="365" style="flex: 1; min-width: 70px;">1 Year</button>
+                        <button class="btn btn-outline btn-sm time-filter active" data-days="custom" style="flex: 1; min-width: 70px;">Custom</button>
                     </div>
-                    <div class="separator"></div>
-                    <div class="stats-grid" style="margin-top: 0.75rem">
-                        <div class="stat-card">
-                            <div class="stat-value" id="totalEntries">0</div>
-                            <div class="stat-label" data-i18n="totalEntries">
-                                Total Entries
-                            </div>
+                    
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end">
+                        <div style="flex: 1; min-width: 140px">
+                            <label style="font-size: 0.7rem; color: hsl(var(--muted-foreground)); display: block; margin-bottom: 0.25rem">Start Date</label>
+                            <input type="date" id="dateRangeStart" class="input" style="width: 100%" />
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="currentStreak">0</div>
-                            <div class="stat-label" data-i18n="currentStreak">
-                                Day Streak
-                            </div>
+                        <div style="flex: 1; min-width: 140px">
+                            <label style="font-size: 0.7rem; color: hsl(var(--muted-foreground)); display: block; margin-bottom: 0.25rem">End Date</label>
+                            <input type="date" id="dateRangeEnd" class="input" style="width: 100%" />
                         </div>
+                        <button id="applyDateRange" class="btn btn-primary" style="white-space: nowrap">Apply</button>
+                        <button id="resetDateRange" class="btn btn-outline" style="white-space: nowrap">Reset</button>
                     </div>
-                    <p
-                        id="weekInsights"
-                        style="
-                            font-size: 0.75rem;
-                            color: hsl(var(--muted-foreground));
-                            line-height: 1.6;
-                            margin-top: 0.75rem;
-                        "
-                        data-i18n="loadingInsights"
-                    >
-                        Loading insights...
-                    </p>
+                    <div id="dateRangeInfo" style="font-size: 0.7rem; color: hsl(var(--muted-foreground)); margin-top: 0.5rem"></div>
                 </div>
-                <div class="card-shadcn">
-                    <h3
-                        style="
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin-bottom: 0.5rem;
-                        "
-                        data-i18n="sevenDayTrend"
-                    >
-                        7-Day Trend
-                    </h3>
-                    <div class="trend-chart" id="trendChart"></div>
+
+                <!-- Key Metrics Row -->
+                <div class="stats-grid" id="keyMetrics" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 1rem;">
+                    <div class="stat-card">
+                        <div style="font-size: 0.65rem; color: hsl(var(--muted-foreground)); text-transform: uppercase; margin-bottom: 0.5rem">Average Mood</div>
+                        <div class="stat-value" id="metricAvgMood" style="font-size: 1.75rem">-</div>
+                        <div style="font-size: 0.65rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem" id="metricAvgLabel">Last 30 days</div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="font-size: 0.65rem; color: hsl(var(--muted-foreground)); text-transform: uppercase; margin-bottom: 0.5rem">Total Entries</div>
+                        <div class="stat-value" id="metricTotalEntries" style="font-size: 1.75rem">0</div>
+                        <div style="font-size: 0.65rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem" id="metricEntriesLabel">Tracked days</div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="font-size: 0.65rem; color: hsl(var(--muted-foreground)); text-transform: uppercase; margin-bottom: 0.5rem">Current Streak</div>
+                        <div class="stat-value" id="metricStreak" style="font-size: 1.75rem">0</div>
+                        <div style="font-size: 0.65rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem">Consecutive days</div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="font-size: 0.65rem; color: hsl(var(--muted-foreground)); text-transform: uppercase; margin-bottom: 0.5rem">Best Day</div>
+                        <div class="stat-value" id="metricBestDay" style="font-size: 1.75rem">-</div>
+                        <div style="font-size: 0.65rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem">Highest mood</div>
+                    </div>
                 </div>
-                <div class="card-shadcn">
-                    <h3
-                        style="
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin-bottom: 0.5rem;
-                        "
-                        data-i18n="categoryAverages"
-                    >
-                        Category Averages
-                    </h3>
-                    <div
-                        id="categoryAverages"
-                        style="
-                            display: flex;
-                            flex-direction: column;
-                            gap: 0.5rem;
-                        "
-                    ></div>
+
+                <!-- Charts - Single Column Layout -->
+                <!-- Mood Trend Line Chart -->
+                <div class="card-shadcn" style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">📈 Mood Trend</h3>
+                    <div style="position: relative; height: 280px; width: 100%">
+                        <canvas id="moodTrendChart"></canvas>
+                    </div>
                 </div>
+
+                <!-- Mood Distribution -->
+                <div class="card-shadcn" style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">😊 Mood Distribution</h3>
+                    <div style="position: relative; height: 280px; width: 100%">
+                        <canvas id="moodDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Category Radar Chart -->
+                <div class="card-shadcn" style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">🎯 Category Balance</h3>
+                    <div style="position: relative; height: 280px; width: 100%">
+                        <canvas id="categoryRadarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Weekly Pattern Chart -->
+                <div class="card-shadcn" style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">📅 Weekly Pattern</h3>
+                    <div style="position: relative; height: 250px; width: 100%">
+                        <canvas id="weeklyPatternChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 7-Day Trend Bar Chart -->
+                <div class="card-shadcn" style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">📊 7-Day Trend</h3>
+                    <div style="position: relative; height: 220px; width: 100%">
+                        <canvas id="sevenDayTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="card-shadcn" style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">📊 Category Breakdown</h3>
+                    <div id="categoryBreakdown"></div>
+                </div>
+
+                <!-- Insights -->
+                <div class="card-shadcn" style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">💡 Insights & Patterns</h3>
+                    <div id="analyticsInsights" style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); line-height: 1.8"></div>
+                </div>
+
+                <!-- 28-Day Heatmap -->
                 <div class="card-shadcn">
-                    <h3
-                        style="
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin-bottom: 0.5rem;
-                        "
-                        data-i18n="moodHeatmap"
-                    >
-                        Mood Heatmap (28 Days)
-                    </h3>
-                    <div class="heatmap" id="heatmap"></div>
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem">🔥 28-Day Heatmap</h3>
+                    <div id="heatmap" class="heatmap"></div>
                 </div>
             </div>
 
             <!-- GAMES -->
             <div class="tab-content" id="tab-games">
                 <div class="card-shadcn">
-                    <h3
-                        style="
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin-bottom: 0.5rem;
-                        "
-                        data-i18n="breathing"
-                    >
-                        🧘 Breathing Exercise
-                    </h3>
-                    <p
-                        style="
-                            font-size: 0.75rem;
-                            color: hsl(var(--muted-foreground));
-                            margin-bottom: 1rem;
-                        "
-                        data-i18n="breathingDesc"
-                    >
-                        Follow the circle to calm your mind
-                    </p>
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem" data-i18n="breathingGame">Breathing Exercise</h3>
                     <div class="game-container">
-                        <div class="breathing-circle" id="breathingCircle">
+                        <div id="breathingCircle" class="breathing-circle">
                             <span id="breathText">Ready</span>
                         </div>
                         <div class="game-stats">
                             <div class="game-stat">
-                                <div class="game-stat-value" id="breathCycles">
-                                    0
-                                </div>
-                                <div class="game-stat-label" data-i18n="cycles">
-                                    Cycles
-                                </div>
+                                <div class="game-stat-value" id="breathCycles">0</div>
+                                <div class="game-stat-label" data-i18n="cycles">Cycles:</div>
                             </div>
                             <div class="game-stat">
-                                <div class="game-stat-value" id="breathTime">
-                                    0:00
-                                </div>
-                                <div class="game-stat-label" data-i18n="time">
-                                    Time
-                                </div>
+                                <div class="game-stat-value" id="breathTime">0:00</div>
+                                <div class="game-stat-label" data-i18n="time">Time:</div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 0.5rem">
-                            <button
-                                class="btn btn-primary"
-                                id="startBreathing"
-                                data-i18n="start"
-                            >
-                                ▶ Start
-                            </button>
-                            <button
-                                class="btn btn-secondary"
-                                id="stopBreathing"
-                                disabled
-                                data-i18n="stop"
-                            >
-                                ⏹ Stop
-                            </button>
+                            <button id="startBreathing" class="btn btn-primary" data-i18n="start">Start</button>
+                            <button id="stopBreathing" class="btn btn-secondary" data-i18n="stop" disabled>Stop</button>
                         </div>
                     </div>
                 </div>
                 <div class="card-shadcn">
-                    <h3
-                        style="
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin-bottom: 0.5rem;
-                        "
-                        data-i18n="gratitude"
-                    >
-                        💝 Gratitude Journal
-                    </h3>
-                    <p
-                        style="
-                            font-size: 0.75rem;
-                            color: hsl(var(--muted-foreground));
-                            margin-bottom: 1rem;
-                        "
-                        data-i18n="gratitudeDesc"
-                    >
-                        Write 3 things you're grateful for
-                    </p>
-                    <div
-                        style="
-                            display: flex;
-                            flex-direction: column;
-                            gap: 0.5rem;
-                        "
-                    >
-                        <textarea
-                            class="textarea gratitude-input"
-                            id="gratitude1"
-                            data-i18n-placeholder="gratitude1"
-                            placeholder="1. I'm grateful for..."
-                        ></textarea>
-                        <textarea
-                            class="textarea gratitude-input"
-                            id="gratitude2"
-                            data-i18n-placeholder="gratitude2"
-                            placeholder="2. I'm grateful for..."
-                        ></textarea>
-                        <textarea
-                            class="textarea gratitude-input"
-                            id="gratitude3"
-                            data-i18n-placeholder="gratitude3"
-                            placeholder="3. I'm grateful for..."
-                        ></textarea>
-                        <button
-                            class="btn btn-primary"
-                            id="saveGratitude"
-                            data-i18n="saveEntry"
-                        >
-                            💾 Save Entry
-                        </button>
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem" data-i18n="gratitudeJournal">Gratitude Journal</h3>
+                    <input type="text" id="gratitude1" class="input" data-i18n-placeholder="entry1" placeholder="I'm grateful for..." style="width: 100%; margin-bottom: 0.5rem" />
+                    <input type="text" id="gratitude2" class="input" data-i18n-placeholder="entry2" placeholder="Today's highlight..." style="width: 100%; margin-bottom: 0.5rem" />
+                    <input type="text" id="gratitude3" class="input" data-i18n-placeholder="entry3" placeholder="Looking forward to..." style="width: 100%; margin-bottom: 0.75rem" />
+                    <button id="saveGratitude" class="btn btn-primary" style="width: 100%" data-i18n="save">Save</button>
+                    <div style="margin-top: 1rem">
+                        <div style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.5rem">
+                            <span data-i18n="totalEntriesLabel">Total Entries</span>: <span id="gratitudeCount">0</span>
+                        </div>
+                        <div style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem" data-i18n="recentEntries">Recent Entries</div>
+                        <div id="gratitudeList" class="gratitude-list"></div>
                     </div>
-                    <div class="separator"></div>
-                    <div style="text-align: center">
-                        <span class="badge" id="gratitudeCount">0 entries</span>
-                    </div>
-                    <div
-                        class="gratitude-list"
-                        id="gratitudeList"
-                        style="margin-top: 0.75rem"
-                    ></div>
                 </div>
                 <div class="card-shadcn">
-                    <h3
-                        style="
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin-bottom: 0.5rem;
-                        "
-                        data-i18n="relax"
-                    >
-                        😌 Quick Relax
-                    </h3>
-                    <p
-                        style="
-                            font-size: 0.75rem;
-                            color: hsl(var(--muted-foreground));
-                            margin-bottom: 1rem;
-                        "
-                        data-i18n="relaxDesc"
-                    >
-                        1-minute guided relaxation with sound cues
-                    </p>
-                    <div style="text-align: center; padding: 1rem">
-                        <div
-                            style="
-                                font-size: 2rem;
-                                font-weight: 300;
-                                margin-bottom: 1rem;
-                            "
-                            id="relaxTimer"
-                        >
-                            1:00
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem" data-i18n="quickRelax">Quick Relax</h3>
+                    <div class="game-container">
+                        <div style="font-size: 2rem; font-weight: 300" id="relaxTimer">1:00</div>
+                        <div style="display: flex; gap: 0.5rem">
+                            <button id="startRelax" class="btn btn-primary" data-i18n="start">Start</button>
+                            <button id="stopRelax" class="btn btn-secondary" data-i18n="stop" disabled>Stop</button>
                         </div>
-                        <button
-                            class="btn btn-primary"
-                            id="startRelax"
-                            data-i18n="startRelax"
-                        >
-                            ▶ Start 1-Minute Relax
-                        </button>
-                        <button
-                            class="btn btn-secondary"
-                            id="stopRelax"
-                            disabled
-                            style="margin-top: 0.5rem"
-                            data-i18n="stopRelax"
-                        >
-                            ⏹ Stop
-                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- TIMER -->
+            <!-- POMODORO / TIMER -->
             <div class="tab-content" id="tab-pomodoro">
-                <div class="timer-modes" style="margin-bottom: 1rem">
-                    <button
-                        class="btn btn-outline btn-sm active"
-                        data-mode="25"
-                    >
-                        🎯 25m
-                    </button>
-                    <button class="btn btn-outline btn-sm" data-mode="5">
-                        ☕ 5m
-                    </button>
-                    <button class="btn btn-outline btn-sm" data-mode="15">
-                        🌙 15m
-                    </button>
-                </div>
-                <div class="timer-display">
-                    <div class="timer-time" id="timerTime">25:00</div>
-                    <div
-                        class="timer-label"
-                        id="timerLabel"
-                        data-i18n="focusTime"
-                    >
-                        Focus Time
+                <div class="card-shadcn">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem" data-i18n="pomodoroTimer">Focus Timer</h3>
+                    <div class="timer-display">
+                        <div class="timer-time" id="timerTime">25:00</div>
+                        <div class="timer-label" id="timerLabel" data-i18n="focusTime">Focus Time</div>
+                        <div class="timer-progress">
+                            <div class="timer-progress-bar" id="timerProgress" style="width: 0%"></div>
+                        </div>
                     </div>
-                    <div class="timer-progress">
-                        <div
-                            class="timer-progress-bar"
-                            id="timerProgress"
-                            style="width: 100%"
-                        ></div>
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: hsl(var(--background)); border-radius: calc(var(--radius) - 2px)">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem">
+                            <span style="font-size: 0.875rem; font-weight: 500" data-i18n="duration">Duration:</span>
+                            <span id="timerDurationDisplay" style="font-size: 1.25rem; font-weight: 600; color: hsl(var(--primary))">25 minutes</span>
+                        </div>
+                        <input type="range" id="timerSlider" class="timer-slider" min="5" max="120" step="5" value="25" style="width: 100%" />
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem">
+                            <span style="font-size: 0.65rem; color: hsl(var(--muted-foreground))">5 min</span>
+                            <span style="font-size: 0.65rem; color: hsl(var(--muted-foreground))">120 min</span>
+                        </div>
                     </div>
-                </div>
-                <div
-                    style="
-                        display: flex;
-                        gap: 0.5rem;
-                        justify-content: center;
-                        margin-top: 1rem;
-                    "
-                >
-                    <button
-                        class="btn btn-primary"
-                        id="timerToggle"
-                        style="min-width: 100px"
-                        data-i18n="start"
-                    >
-                        ▶ Start
-                    </button>
-                    <button
-                        class="btn btn-outline"
-                        id="timerReset"
-                        style="min-width: 100px"
-                        data-i18n="reset"
-                    >
-                        ↺ Reset
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
+                        <button id="timerToggle" class="btn btn-primary" style="flex: 1">▶ Start</button>
+                        <button id="timerReset" class="btn btn-secondary" data-i18n="reset">Reset</button>
+                    </div>
                 </div>
             </div>
 
             <!-- TASKS -->
             <div class="tab-content" id="tab-todos">
-                <div
-                    style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    "
-                >
-                    <h3
-                        style="font-size: 0.9rem; font-weight: 600"
-                        data-i18n="tasks"
-                    >
-                        Tasks
-                    </h3>
-                    <span class="badge" id="taskCount">0/0</span>
-                </div>
-                <div style="display: flex; gap: 0.5rem">
-                    <input
-                        type="text"
-                        class="input"
-                        id="todoInput"
-                        data-i18n-placeholder="addTask"
-                        placeholder="Add a task..."
-                    />
-                    <button class="btn btn-primary btn-icon" id="addBtn">
-                        +
-                    </button>
-                </div>
-                <ul id="todoList"></ul>
-                <div style="display: flex; gap: 0.5rem">
-                    <button
-                        class="btn btn-secondary btn-sm"
-                        id="clearCompleted"
-                        style="flex: 1"
-                        data-i18n="clearDone"
-                    >
-                        Clear Done
-                    </button>
-                    <button
-                        class="btn btn-destructive btn-sm"
-                        id="clearAll"
-                        style="flex: 1"
-                        data-i18n="clearAll"
-                    >
-                        Clear All
-                    </button>
+                <div class="card-shadcn">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem" data-i18n="tasks">Tasks</h3>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem">
+                        <input type="text" id="todoInput" class="input" data-i18n-placeholder="taskPlaceholder" placeholder="Add a new task..." style="flex: 1" />
+                        <button id="addBtn" class="btn btn-primary btn-icon" data-i18n="addTask">+</button>
+                    </div>
+                    <div style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.5rem">
+                        <span data-i18n="tasks">Tasks</span>: <span id="taskCount">0/0</span>
+                    </div>
+                    <ul id="todoList"></ul>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
+                        <button id="clearCompleted" class="btn btn-outline btn-sm" style="flex: 1" data-i18n="clearCompleted">Clear Completed</button>
+                        <button id="clearAll" class="btn btn-destructive btn-sm" style="flex: 1" data-i18n="clearAll">Clear All</button>
+                    </div>
                 </div>
             </div>
 
             <!-- SETTINGS -->
             <div class="tab-content" id="tab-settings">
                 <div class="card-shadcn">
-                    <h3
-                        style="
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin-bottom: 1rem;
-                        "
-                        data-i18n="preferences"
-                    >
-                        Preferences
-                    </h3>
-                    <div
-                        style="
-                            display: flex;
-                            flex-direction: column;
-                            gap: 0.75rem;
-                        "
-                    >
-                        <div
-                            style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                            "
-                        >
-                            <div>
-                                <div
-                                    style="
-                                        font-size: 0.875rem;
-                                        font-weight: 500;
-                                    "
-                                    data-i18n="language"
-                                >
-                                    🌐 Language
-                                </div>
-                                <div
-                                    style="
-                                        font-size: 0.7rem;
-                                        color: hsl(var(--muted-foreground));
-                                    "
-                                    data-i18n="chooseLanguage"
-                                >
-                                    Choose your language
-                                </div>
-                            </div>
-                            <select
-                                class="select"
-                                id="languageSelect"
-                                style="min-width: 120px"
-                            >
-                                <option value="en">English</option>
-                                <option value="id">Indonesia</option>
-                            </select>
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem">Settings</h3>
+                    
+                    <!-- PWA Install Button -->
+                    <button id="installApp" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem; display: none;">
+                        📲 <span data-i18n="installApp">Install App</span>
+                    </button>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid hsl(var(--border))">
+                        <div>
+                            <div style="font-size: 0.875rem; font-weight: 500" data-i18n="language">Language</div>
                         </div>
-                        <div class="separator"></div>
-                        <div
-                            style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                            "
-                        >
-                            <div>
-                                <div
-                                    style="
-                                        font-size: 0.875rem;
-                                        font-weight: 500;
-                                    "
-                                    data-i18n="sound"
-                                >
-                                    🔔 Sound
-                                </div>
-                                <div
-                                    style="
-                                        font-size: 0.7rem;
-                                        color: hsl(var(--muted-foreground));
-                                    "
-                                    data-i18n="soundDesc"
-                                >
-                                    Play alarm on completion
-                                </div>
-                            </div>
-                            <div class="switch active" id="soundToggle"></div>
-                        </div>
-                        <div
-                            style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                            "
-                        >
-                            <div>
-                                <div
-                                    style="
-                                        font-size: 0.875rem;
-                                        font-weight: 500;
-                                    "
-                                    data-i18n="notifications"
-                                >
-                                    📬 Notifications
-                                </div>
-                                <div
-                                    style="
-                                        font-size: 0.7rem;
-                                        color: hsl(var(--muted-foreground));
-                                    "
-                                    data-i18n="notifyDesc"
-                                >
-                                    Desktop notifications
-                                </div>
-                            </div>
-                            <div class="switch" id="notifyToggle"></div>
-                        </div>
-                        <div
-                            style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                            "
-                        >
-                            <div>
-                                <div
-                                    style="
-                                        font-size: 0.875rem;
-                                        font-weight: 500;
-                                    "
-                                    data-i18n="alarmSound"
-                                >
-                                    🔊 Alarm Sound
-                                </div>
-                                <div
-                                    style="
-                                        font-size: 0.7rem;
-                                        color: hsl(var(--muted-foreground));
-                                    "
-                                    data-i18n="chooseTone"
-                                >
-                                    Choose tone
-                                </div>
-                            </div>
-                            <select
-                                class="select"
-                                id="alarmSound"
-                                style="min-width: 100px"
-                            >
-                                <option value="digital" data-i18n="digital">
-                                    Digital
-                                </option>
-                                <option value="chime" data-i18n="chime">
-                                    Chime
-                                </option>
-                                <option value="bell" data-i18n="bell">
-                                    Bell
-                                </option>
-                            </select>
-                        </div>
-                        <div class="separator"></div>
-                        <div
-                            style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                            "
-                        >
-                            <div>
-                                <div
-                                    style="
-                                        font-size: 0.875rem;
-                                        font-weight: 500;
-                                    "
-                                    data-i18n="exportData"
-                                >
-                                    💾 Export Data
-                                </div>
-                                <div
-                                    style="
-                                        font-size: 0.7rem;
-                                        color: hsl(var(--muted-foreground));
-                                    "
-                                    data-i18n="downloadData"
-                                >
-                                    Download all data
-                                </div>
-                            </div>
-                            <button
-                                class="btn btn-outline btn-sm"
-                                id="exportData"
-                                data-i18n="export"
-                            >
-                                Export
-                            </button>
-                        </div>
-                        <div
-                            style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                            "
-                        >
-                            <div>
-                                <div
-                                    style="
-                                        font-size: 0.875rem;
-                                        font-weight: 500;
-                                        color: hsl(var(--destructive));
-                                    "
-                                    data-i18n="resetAll"
-                                >
-                                    🗑️ Reset All
-                                </div>
-                                <div
-                                    style="
-                                        font-size: 0.7rem;
-                                        color: hsl(var(--muted-foreground));
-                                    "
-                                    data-i18n="clearAllData"
-                                >
-                                    Clear all saved data
-                                </div>
-                            </div>
-                            <button
-                                class="btn btn-destructive btn-sm"
-                                id="resetAll"
-                                data-i18n="reset"
-                            >
-                                Reset
-                            </button>
+                        <select id="language" class="select">
+                            <option value="en">English</option>
+                            <option value="id">Bahasa Indonesia</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Theme Selection -->
+                    <div style="padding: 0.75rem 0; border-bottom: 1px solid hsl(var(--border))">
+                        <div style="font-size: 0.875rem; font-weight: 500; margin-bottom: 0.75rem" data-i18n="theme">Theme</div>
+                        <div style="display: flex; gap: 0.5rem">
+                            <button class="btn theme-select-btn btn-outline btn-sm" data-theme="blue" style="flex: 1">🔵 <span data-i18n="blueTheme">Blue</span></button>
+                            <button class="btn theme-select-btn btn-outline btn-sm" data-theme="pink" style="flex: 1">🌸 <span data-i18n="pinkTheme">Pink</span></button>
+                            <button class="btn theme-select-btn btn-outline btn-sm" data-theme="green" style="flex: 1">🌿 <span data-i18n="greenTheme">Green</span></button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="alarmModal">
-            <div class="modal">
-                <div class="modal-icon">🔔</div>
-                <div class="modal-title">Time's Up!</div>
-                <div class="modal-message" id="alarmMessage">
-                    Session complete!
-                </div>
-                <div class="modal-buttons">
-                    <button class="btn btn-primary" id="stopAlarm">
-                        🔕 Stop
-                    </button>
-                    <button class="btn btn-secondary" id="snoozeAlarm">
-                        ⏰ 5m
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid hsl(var(--border))">
+                        <div>
+                            <div style="font-size: 0.875rem; font-weight: 500" data-i18n="sound">Sound</div>
+                        </div>
+                        <div id="soundToggle" class="switch"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid hsl(var(--border))">
+                        <div>
+                            <div style="font-size: 0.875rem; font-weight: 500" data-i18n="notifications">Notifications</div>
+                        </div>
+                        <div id="notifyToggle" class="switch"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid hsl(var(--border))">
+                        <div>
+                            <div style="font-size: 0.875rem; font-weight: 500" data-i18n="alarmSound">Alarm Sound</div>
+                        </div>
+                        <select id="alarmSound" class="select">
+                            <option value="digital" data-i18n="digital">Digital</option>
+                            <option value="chime" data-i18n="chime">Chime</option>
+                            <option value="bell" data-i18n="bell">Bell</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem">
+                        <button id="exportData" class="btn btn-outline" style="width: 100%" data-i18n="exportData">
+                            📤 Export Data
+                        </button>
+                        <button id="importData" class="btn btn-outline" style="width: 100%" data-i18n="importData">
+                            📥 Import Data
+                        </button>
+                    </div>
+                    <button id="resetAll" class="btn btn-destructive" style="width: 100%; margin-top: 0.5rem" data-i18n="resetApp">
+                        Reset App
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="modal-overlay" id="alertModal">
+        <!-- Modals -->
+        <div id="alertModal" class="modal-overlay">
             <div class="modal">
-                <div class="modal-icon" id="alertIcon">✓</div>
-                <div class="modal-title" id="alertTitle">Success</div>
-                <div class="modal-message" id="alertMessage">
-                    Operation completed!
-                </div>
+                <div class="modal-icon" id="alertIcon">ℹ️</div>
+                <div class="modal-title" id="alertTitle">Alert</div>
+                <div class="modal-message" id="alertMessage"></div>
                 <div class="modal-buttons">
-                    <button class="btn btn-primary" id="alertOk">OK</button>
+                    <button id="alertOk" class="btn btn-primary">OK</button>
                 </div>
             </div>
         </div>
 
-        <script>
-            // Simple localStorage-based storage (no IndexedDB complexity)
-            const Store = {
-                get(key, def) {
-                    try {
-                        return JSON.parse(localStorage.getItem(key)) || def;
-                    } catch {
-                        return def;
-                    }
-                },
-                set(key, val) {
-                    localStorage.setItem(key, JSON.stringify(val));
-                },
-                mood: {
-                    get(date) {
-                        const all = Store.get("moods", {});
-                        return all[date];
-                    },
-                    set(entry) {
-                        const all = Store.get("moods", {});
-                        all[entry.date] = entry;
-                        Store.set("moods", all);
-                    },
-                    getAll() {
-                        return Object.values(Store.get("moods", {}));
-                    },
-                },
-                gratitude: {
-                    add(entry) {
-                        const all = Store.get("gratitude", []);
-                        all.push(entry);
-                        Store.set("gratitude", all);
-                    },
-                    getAll() {
-                        return Store.get("gratitude", []);
-                    },
-                },
-                pomodoro: {
-                    add(entry) {
-                        const all = Store.get("pomodoro", []);
-                        all.push(entry);
-                        Store.set("pomodoro", all);
-                    },
-                    getAll() {
-                        return Store.get("pomodoro", []);
-                    },
-                },
-            };
-
-            const App = {
-                theme: localStorage.getItem("theme") || "blue",
-                colorScheme: localStorage.getItem("colorScheme") || "dark",
-                soundEnabled: localStorage.getItem("soundEnabled") !== "false",
-                notifyEnabled: localStorage.getItem("notifyEnabled") === "true",
-                alarmSound: localStorage.getItem("alarmSound") || "digital",
-                audioCtx: null,
-                timerInterval: null,
-                timeLeft: 25 * 60,
-                totalTime: 25 * 60,
-                isRunning: false,
-                currentMode: 25,
-                alarmLoop: null,
-                isMobile:
-                    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                        navigator.userAgent,
-                    ),
-                selectedMood: null,
-                breathingInterval: null,
-                breathCycles: 0,
-                breathTime: 0,
-                breathPhase: "ready",
-            };
-
-            let currentLang = localStorage.getItem("language") || "en";
-
-            // Initialize
-            setTimeout(() => {
-                applyLanguage();
-                checkNotificationPermission();
-                updateMoodUI();
-                updateAnalytics();
-                updateGratitudeCount();
-                loadGratitudeList();
-            }, 100);
-
-            async function checkNotificationPermission() {
-                if (
-                    App.notifyEnabled &&
-                    Notification.permission !== "granted"
-                ) {
-                    await Notification.requestPermission();
-                }
-            }
-
-            function applyTheme(theme) {
-                document.documentElement.setAttribute("data-theme", theme);
-                App.theme = theme;
-                localStorage.setItem("theme", theme);
-                // Update theme buttons
-                document
-                    .querySelectorAll(".theme-btn[data-theme]")
-                    .forEach((btn) => {
-                        btn.classList.toggle(
-                            "active",
-                            btn.dataset.theme === theme,
-                        );
-                    });
-            }
-
-            function applyColorScheme(scheme) {
-                if (scheme === "light") {
-                    document.documentElement.setAttribute(
-                        "data-color-scheme",
-                        "light",
-                    );
-                } else {
-                    document.documentElement.removeAttribute(
-                        "data-color-scheme",
-                    );
-                }
-                App.colorScheme = scheme;
-                localStorage.setItem("colorScheme", scheme);
-                const metaTheme = document.querySelector(
-                    'meta[name="theme-color"]',
-                );
-                if (metaTheme)
-                    metaTheme.setAttribute(
-                        "content",
-                        scheme === "light" ? "#ffffff" : "#09090b",
-                    );
-                // Update color scheme buttons
-                document
-                    .querySelectorAll(".theme-btn[data-color]")
-                    .forEach((btn) => {
-                        btn.classList.toggle(
-                            "active",
-                            btn.dataset.color === scheme,
-                        );
-                    });
-            }
-
-            applyTheme(App.theme);
-            applyColorScheme(App.colorScheme);
-
-            document
-                .querySelectorAll(".theme-btn[data-theme]")
-                .forEach((btn) =>
-                    btn.addEventListener("click", () =>
-                        applyTheme(btn.dataset.theme),
-                    ),
-                );
-            document.querySelectorAll(".theme-btn[data-color]").forEach((btn) =>
-                btn.addEventListener("click", () => {
-                    applyColorScheme(btn.dataset.color);
-                }),
-            );
-
-            const translations = {
-                en: {
-                    howAreYou: "How are you feeling?",
-                    trackDaily: "Track your mood daily (19:00 - 23:59)",
-                    veryBad: "Very Bad",
-                    bad: "Bad",
-                    neutral: "Neutral",
-                    good: "Good",
-                    veryGood: "Very Good",
-                    submitMood: "Submit Today's Mood",
-                    selectMood: "Select Mood",
-                    selectMoodMsg: "Please select a mood level (1-5).",
-                    alreadySubmitted: "Already Submitted",
-                    alreadySubmittedMsg: "You have already submitted today.",
-                    notAvailable: "Not Available",
-                    notAvailableMsg: "Submission only available 19:00-23:59.",
-                    moodRecorded: "Mood Recorded!",
-                    saveError: "Save Error",
-                    saveErrorMsg: "Failed to save.",
-                    noMoodData: "No mood data yet. Start tracking!",
-                    exportSuccess: "Data Exported",
-                    exportSuccessMsg: "Your data has been downloaded.",
-                    resetConfirm: "Reset All Data",
-                    resetConfirmMsg: "This will delete ALL data. Continue?",
-                    resetComplete: "Reset Complete",
-                    resetCompleteMsg: "Reloading...",
-                    available: "Available 19:00 - 23:59",
-                    next: "Next: ",
-                    rateYourDay: "Rate your day",
-                    submittedAt: "Submitted at ",
-                    today: "Today: ",
-                    focusComplete: "Focus complete! Take a break.",
-                    breakOver: "Break over! Ready to focus?",
-                    timesUp: "Time's Up!",
-                    emptyEntry: "Empty Entry",
-                    emptyEntryMsg: "Write at least one thing.",
-                    gratitudeSaved: "Gratitude Saved!",
-                    gratitudeSavedMsg: "Your entry has been saved.",
-                    deleteTasks: "Delete all tasks?",
-                    clearDone: "Clear Done",
-                    clearAll: "Clear All",
-                    addTask: "Add a task...",
-                    tasks: "Tasks",
-                    saved: "Saved",
-                    unsaved: "Unsaved",
-                    export: "Export",
-                    reset: "Reset",
-                    ok: "OK",
-                    stop: "Stop",
-                    snooze: "5m Snooze",
-                    focusTime: "Focus Time",
-                    shortBreak: "Short Break",
-                    longBreak: "Long Break",
-                    language: "Language",
-                    chooseLanguage: "Choose your language",
-                    sound: "Sound",
-                    soundDesc: "Play alarm on completion",
-                    notifications: "Notifications",
-                    notifyDesc: "Desktop notifications",
-                    alarmSound: "Alarm Sound",
-                    chooseTone: "Choose tone",
-                    exportData: "Export Data",
-                    downloadData: "Download all data",
-                    resetAll: "Reset All",
-                    clearAllData: "Clear all saved data",
-                    weeklySummary: "Weekly Summary",
-                    avgMood: "Avg Mood",
-                    vsLastWeek: "vs Last Week",
-                    bestDay: "Best Day",
-                    worstDay: "Worst Day",
-                    loadingInsights: "Loading insights...",
-                    sevenDayTrend: "7-Day Trend",
-                    moodHeatmap: "Mood Heatmap (28 Days)",
-                    breathing: "Breathing Exercise",
-                    breathingDesc: "Follow the circle to calm your mind",
-                    gratitude: "Gratitude Journal",
-                    gratitudeDesc: "Write 3 things you're grateful for",
-                    relax: "Quick Relax",
-                    relaxDesc: "1-minute guided relaxation",
-                    startRelax: "Start 1-Minute Relax",
-                    cycles: "Cycles",
-                    time: "Time",
-                    start: "Start",
-                    stop: "Stop",
-                    saveEntry: "Save Entry",
-                    entries: "entries",
-                    preferences: "Preferences",
-                    digital: "Digital",
-                    chime: "Chime",
-                    bell: "Bell",
-                    relationships: "Relationships",
-                    connection: "Connection",
-                    family: "Family",
-                    friends: "Friends",
-                    partner: "Colleague",
-                    stability: "Stability",
-                    security: "Security",
-                    workStudy: "Work/Study",
-                    finances: "Finances",
-                    workLife: "Work-Life",
-                    mental: "Mental",
-                    mindset: "Mindset",
-                    stress: "Stress",
-                    anxiety: "Anxiety",
-                    physical: "Physical",
-                    health: "Health",
-                    sleep: "Sleep",
-                    energy: "Energy",
-                    exercise: "Exercise",
-                    meaning: "Meaning",
-                    purpose: "Purpose",
-                    goals: "Goals",
-                    growth: "Growth",
-                    whatMadeYouFeel:
-                        "What made you feel this way today? (optional)",
-                    gratitude1: "1. I'm grateful for...",
-                    gratitude2: "2. I'm grateful for...",
-                    gratitude3: "3. I'm grateful for...",
-                    mood: "Mood",
-                    analytics: "Analytics",
-                    games: "Games",
-                    timer: "Timer",
-                    settings: "Settings",
-                    goodMorning: "Good morning",
-                    goodAfternoon: "Good afternoon",
-                    goodEvening: "Good evening",
-                },
-                id: {
-                    howAreYou: "Bagaimana perasaanmu?",
-                    trackDaily:
-                        "Catat suasana hatimu setiap hari (19:00 - 23:59)",
-                    veryBad: "Sangat Buruk",
-                    bad: "Buruk",
-                    neutral: "Netral",
-                    good: "Baik",
-                    veryGood: "Sangat Baik",
-                    submitMood: "Kirim Suasana Hati Hari Ini",
-                    selectMood: "Pilih Suasana Hati",
-                    selectMoodMsg: "Pilih tingkat suasana hati (1-5).",
-                    alreadySubmitted: "Sudah Dikirim",
-                    alreadySubmittedMsg: "Kamu sudah mengirim hari ini.",
-                    notAvailable: "Tidak Tersedia",
-                    notAvailableMsg: "Pengiriman hanya tersedia 19:00-23:59.",
-                    moodRecorded: "Suasana Hati Tercatat!",
-                    saveError: "Kesalahan Penyimpanan",
-                    saveErrorMsg: "Gagal menyimpan.",
-                    noMoodData: "Belum ada data. Mulai catat!",
-                    exportSuccess: "Data Diekspor",
-                    exportSuccessMsg: "Data kamu telah diunduh.",
-                    resetConfirm: "Reset Semua Data",
-                    resetConfirmMsg:
-                        "Ini akan menghapus SEMUA data. Lanjutkan?",
-                    resetComplete: "Reset Selesai",
-                    resetCompleteMsg: "Memuat ulang...",
-                    available: "Tersedia 19:00 - 23:59",
-                    next: "Berikutnya: ",
-                    rateYourDay: "Nilai harimu",
-                    submittedAt: "Dikirim pada ",
-                    today: "Hari ini: ",
-                    focusComplete: "Fokus selesai! Istirahatlah.",
-                    breakOver: "Istirahat selesai! Siap fokus?",
-                    timesUp: "Waktunya Habis!",
-                    emptyEntry: "Kosong",
-                    emptyEntryMsg: "Tulis setidaknya satu hal.",
-                    gratitudeSaved: "Tersimpan!",
-                    gratitudeSavedMsg: "Entri kamu telah disimpan.",
-                    deleteTasks: "Hapus semua tugas?",
-                    clearDone: "Hapus Selesai",
-                    clearAll: "Hapus Semua",
-                    addTask: "Tambah tugas...",
-                    tasks: "Tugas",
-                    saved: "Tersimpan",
-                    unsaved: "Belum tersimpan",
-                    export: "Ekspor",
-                    reset: "Reset",
-                    ok: "OK",
-                    stop: "Stop",
-                    snooze: "Tunda 5m",
-                    focusTime: "Waktu Fokus",
-                    shortBreak: "Istirahat Pendek",
-                    longBreak: "Istirahat Panjang",
-                    language: "Bahasa",
-                    chooseLanguage: "Pilih bahasamu",
-                    sound: "Suara",
-                    soundDesc: "Putar alarm saat selesai",
-                    notifications: "Notifikasi",
-                    notifyDesc: "Notifikasi desktop",
-                    alarmSound: "Suara Alarm",
-                    chooseTone: "Pilih nada",
-                    exportData: "Ekspor Data",
-                    downloadData: "Unduh semua data",
-                    resetAll: "Reset Semua",
-                    clearAllData: "Hapus semua data tersimpan",
-                    weeklySummary: "Ringkasan Mingguan",
-                    avgMood: "Rata-rata",
-                    vsLastWeek: "vs Minggu Lalu",
-                    bestDay: "Hari Terbaik",
-                    worstDay: "Hari Terburuk",
-                    loadingInsights: "Memuat wawasan...",
-                    sevenDayTrend: "Tren 7 Hari",
-                    moodHeatmap: "Peta Panas (28 Hari)",
-                    categoryAverages: "Rata-rata Kategori",
-                    totalEntries: "Total Entri",
-                    currentStreak: "Hari Beruntun",
-                    breathing: "Latihan Pernapasan",
-                    breathingDesc: "Ikuti lingkaran untuk menenangkan pikiran",
-                    gratitude: "Jurnal Rasa Syukur",
-                    gratitudeDesc: "Tulis 3 hal yang kamu syukuri",
-                    relax: "Relaksasi Cepat",
-                    relaxDesc: "Relaksasi terpandu 1 menit dengan suara",
-                    startRelax: "Mulai Relaksasi 1 Menit",
-                    stopRelax: "Stop",
-                    relaxationComplete: "Relaksasi Selesai",
-                    relaxationCompleteMsg:
-                        "Sesi relaksasi 1 menit kamu selesai. Kamu seharusnya merasa lebih tenang. 💙",
-                    cycles: "Siklus",
-                    time: "Waktu",
-                    start: "Mulai",
-                    stop: "Stop",
-                    saveEntry: "Simpan Entri",
-                    entries: "entri",
-                    preferences: "Preferensi",
-                    digital: "Digital",
-                    chime: "Lonceng",
-                    bell: "Bel",
-                    relationships: "Hubungan",
-                    connection: "Koneksi",
-                    family: "Keluarga",
-                    friends: "Teman",
-                    partner: "Rekan kerja",
-                    stability: "Stabilitas",
-                    security: "Keamanan",
-                    workStudy: "Pekerjaan/Studi",
-                    finances: "Keuangan",
-                    workLife: "Work-Life",
-                    mental: "Mental",
-                    mindset: "Pola Pikir",
-                    stress: "Stres",
-                    anxiety: "Kecemasan",
-                    physical: "Fisik",
-                    health: "Kesehatan",
-                    sleep: "Tidur",
-                    energy: "Energi",
-                    exercise: "Olahraga",
-                    meaning: "Makna",
-                    purpose: "Tujuan",
-                    goals: "Tujuan",
-                    growth: "Pertumbuhan",
-                    whatMadeYouFeel:
-                        "Apa yang membuatmu merasa seperti ini hari ini? (opsional)",
-                    gratitude1: "1. Aku bersyukur untuk...",
-                    gratitude2: "2. Aku bersyukur untuk...",
-                    gratitude3: "3. Aku bersyukur untuk...",
-                    mood: "Suasana Hati",
-                    analytics: "Analitik",
-                    games: "Permainan",
-                    timer: "Timer",
-                    settings: "Pengaturan",
-                    goodMorning: "Selamat pagi",
-                    goodAfternoon: "Selamat siang",
-                    goodEvening: "Selamat malam",
-                },
-            };
-
-            function t(key) {
-                return (
-                    translations[currentLang][key] ||
-                    translations["en"][key] ||
-                    key
-                );
-            }
-
-            function applyLanguage() {
-                // Update all translatable elements
-                document.querySelectorAll("[data-i18n]").forEach((el) => {
-                    const key = el.dataset.i18n;
-                    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-                        el.placeholder = t(key);
-                    } else {
-                        el.textContent = t(key);
-                    }
-                });
-                document.getElementById("languageSelect").value = currentLang;
-                updateTime(); // Update greeting
-                // Refresh analytics to update category names
-                updateAnalytics();
-            }
-
-            document
-                .getElementById("languageSelect")
-                .addEventListener("change", function () {
-                    currentLang = this.value;
-                    localStorage.setItem("language", currentLang);
-                    applyLanguage();
-                });
-
-            function updateTime() {
-                const now = new Date();
-                document.getElementById("clock").textContent =
-                    now.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    });
-                document.getElementById("date").textContent =
-                    now.toLocaleDateString([], {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                    });
-                const hour = now.getHours();
-                let greeting = t("goodEvening");
-                if (hour >= 5 && hour < 12) greeting = t("goodMorning");
-                else if (hour >= 12 && hour < 17) greeting = t("goodAfternoon");
-                document.getElementById("greeting").textContent = greeting;
-            }
-            setInterval(updateTime, 1000);
-            updateTime();
-
-            document.querySelectorAll(".tab-btn").forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    document
-                        .querySelectorAll(".tab-btn")
-                        .forEach((b) => b.classList.remove("active"));
-                    document
-                        .querySelectorAll(".tab-content")
-                        .forEach((c) => c.classList.remove("active"));
-                    btn.classList.add("active");
-                    document
-                        .getElementById("tab-" + btn.dataset.tab)
-                        .classList.add("active");
-                    if (btn.dataset.tab === "analytics") updateAnalytics();
-                });
-            });
-
-            // Particles
-            const canvas = document.getElementById("canvas"),
-                ctx = canvas.getContext("2d");
-            let particles = [];
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-            window.addEventListener("resize", resize);
-            resize();
-
-            class Particle {
-                constructor() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = Math.random() * canvas.height;
-                    this.vx = (Math.random() - 0.5) * 0.3;
-                    this.vy = (Math.random() - 0.5) * 0.3;
-                    this.size = Math.random() * 1.5 + 0.5;
-                }
-                update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-                }
-                draw() {
-                    ctx.fillStyle = "hsla(199, 89%, 48%, 0.3)";
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            function initParticles() {
-                particles = [];
-                for (let i = 0; i < 50; i++) particles.push(new Particle());
-            }
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                particles.forEach((p) => {
-                    p.update();
-                    p.draw();
-                });
-                requestAnimationFrame(animate);
-            }
-            initParticles();
-            animate();
-
-            // Mood
-            function getTodayKey() {
-                const now = new Date();
-                return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-            }
-
-            // Submit 19-24
-            function canSubmitMood() {
-                const now = new Date();
-                return now.getHours() >= 19 && now.getHours() < 24;
-            }
-
-            function getSubmissionStatus() {
-                const today = getTodayKey();
-                const entry = Store.mood.get(today);
-                if (entry) return { status: "submitted", entry };
-                if (!canSubmitMood()) {
-                    const now = new Date();
-                    const nextSubmit = new Date(now);
-                    nextSubmit.setHours(19, 0, 0, 0);
-                    if (now >= nextSubmit)
-                        nextSubmit.setDate(nextSubmit.getDate() + 1);
-                    return { status: "pending", nextSubmit };
-                }
-                return { status: "available" };
-            }
-
-            function updateMoodUI() {
-                const status = getSubmissionStatus();
-                const statusIcon = document.getElementById("statusIcon");
-                const statusText = document.getElementById("statusText");
-                const statusTime = document.getElementById("statusTime");
-                const moodInputSection =
-                    document.getElementById("moodInputSection");
-                const moodEmojis = {
-                    1: "😞",
-                    2: "😕",
-                    3: "😐",
-                    4: "🙂",
-                    5: "🤩",
-                };
-                const moodLabels = [
-                    "veryBad",
-                    "bad",
-                    "neutral",
-                    "good",
-                    "veryGood",
-                ];
-
-                if (status.status === "submitted") {
-                    statusIcon.textContent =
-                        moodEmojis[status.entry.moodValue] || "✅";
-                    statusText.textContent = `${t("today")} ${t(moodLabels[status.entry.moodValue - 1])}`;
-                    statusTime.textContent = `${t("submittedAt")} ${new Date(status.entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-                    moodInputSection.style.display = "none";
-                } else if (status.status === "pending") {
-                    statusIcon.textContent = "⏰";
-                    statusText.textContent = t("available");
-                    statusTime.textContent = `${t("next")}${status.nextSubmit.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-                    moodInputSection.style.display = "none";
-                } else {
-                    statusIcon.textContent = "📝";
-                    statusText.textContent = t("rateYourDay");
-                    statusTime.textContent = "";
-                    moodInputSection.style.display = "block";
-                }
-            }
-
-            document.querySelectorAll(".likert-btn").forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    document
-                        .querySelectorAll(".likert-btn")
-                        .forEach((b) => b.classList.remove("selected"));
-                    btn.classList.add("selected");
-                    App.selectedMood = parseInt(btn.dataset.value);
-                });
-            });
-
-            // Star rating handlers
-            document.querySelectorAll(".star-rating .star").forEach((star) => {
-                star.addEventListener("click", () => {
-                    const rating = star.parentElement;
-                    const value = parseInt(star.dataset.value);
-                    // Set all stars up to clicked one as active
-                    rating.querySelectorAll(".star").forEach((s, i) => {
-                        s.classList.toggle("active", i < value);
-                    });
-                    // Store the value
-                    rating.dataset.selectedValue = value;
-                });
-            });
-
-            document
-                .getElementById("submitMood")
-                .addEventListener("click", () => {
-                    if (!App.selectedMood) {
-                        showAlert(
-                            "warning",
-                            t("selectMood"),
-                            t("selectMoodMsg"),
-                        );
-                        return;
-                    }
-                    const today = getTodayKey();
-                    const existing = Store.mood.get(today);
-                    if (existing) {
-                        showAlert(
-                            "info",
-                            t("alreadySubmitted"),
-                            t("alreadySubmittedMsg"),
-                        );
-                        updateMoodUI();
-                        return;
-                    }
-                    if (!canSubmitMood()) {
-                        showAlert(
-                            "warning",
-                            t("notAvailable"),
-                            t("notAvailableMsg"),
-                        );
-                        return;
-                    }
-
-                    const categories = {};
-                    document
-                        .querySelectorAll(".star-rating")
-                        .forEach((rating) => {
-                            const cat = rating.dataset.cat;
-                            const sub = rating.dataset.sub;
-                            const val = parseInt(
-                                rating.dataset.selectedValue || 0,
-                            );
-                            if (!categories[cat]) categories[cat] = {};
-                            if (val >= 1 && val <= 5)
-                                categories[cat][sub] = val;
-                        });
-
-                    Store.mood.set({
-                        date: today,
-                        timestamp: new Date().toISOString(),
-                        moodValue: App.selectedMood,
-                        categories,
-                        reasonText: document
-                            .getElementById("moodReason")
-                            .value.trim(),
-                        dayOfWeek: new Date().getDay(),
-                    });
-
-                    showAlert(
-                        "success",
-                        t("moodRecorded"),
-                        `${t("today")} ${t(moodLabels[App.selectedMood - 1])}`,
-                    );
-                    App.selectedMood = null;
-                    document
-                        .querySelectorAll(".likert-btn")
-                        .forEach((b) => b.classList.remove("selected"));
-                    document
-                        .querySelectorAll(".star-rating .star")
-                        .forEach((s) => s.classList.remove("active"));
-                    document
-                        .querySelectorAll(".star-rating")
-                        .forEach((r) => delete r.dataset.selectedValue);
-                    document.getElementById("moodReason").value = "";
-                    updateMoodUI();
-                });
-
-            // Analytics
-            function updateAnalytics() {
-                const entries = Store.mood.getAll();
-                if (entries.length === 0) {
-                    document.getElementById("weeklyStats").innerHTML =
-                        `<div style="grid-column: span 4; text-align: center; padding: 2rem; color: hsl(var(--muted-foreground));">${t("noMoodData")}</div>`;
-                    document.getElementById("categoryAverages").innerHTML = "";
-                    return;
-                }
-
-                entries.sort((a, b) => new Date(a.date) - new Date(b.date));
-                const now = new Date();
-                const weekAgo = new Date(now);
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                const lastWeek = new Date(now);
-                lastWeek.setDate(lastWeek.getDate() - 14);
-
-                const thisWeekEntries = entries.filter(
-                    (e) => new Date(e.date) >= weekAgo,
-                );
-                const lastWeekEntries = entries.filter(
-                    (e) =>
-                        new Date(e.date) >= lastWeek &&
-                        new Date(e.date) < weekAgo,
-                );
-
-                const thisWeekAvg = thisWeekEntries.length
-                    ? (
-                          thisWeekEntries.reduce(
-                              (sum, e) => sum + e.moodValue,
-                              0,
-                          ) / thisWeekEntries.length
-                      ).toFixed(1)
-                    : "-";
-                const lastWeekAvg = lastWeekEntries.length
-                    ? lastWeekEntries.reduce((sum, e) => sum + e.moodValue, 0) /
-                      lastWeekEntries.length
-                    : null;
-
-                document.getElementById("weekAvg").textContent =
-                    thisWeekAvg !== "-" ? `${thisWeekAvg}/5` : "-";
-                if (lastWeekAvg !== null) {
-                    const change = (
-                        ((thisWeekAvg - lastWeekAvg) / lastWeekAvg) *
-                        100
-                    ).toFixed(0);
-                    document.getElementById("weekChange").textContent =
-                        change > 0 ? `+${change}%` : `${change}%`;
-                } else document.getElementById("weekChange").textContent = "-";
-
-                if (thisWeekEntries.length > 0) {
-                    const best = thisWeekEntries.reduce((max, e) =>
-                        e.moodValue > max.moodValue ? e : max,
-                    );
-                    const worst = thisWeekEntries.reduce((min, e) =>
-                        e.moodValue < min.moodValue ? e : min,
-                    );
-                    document.getElementById("bestDay").textContent = new Date(
-                        best.date,
-                    ).toLocaleDateString("en", { weekday: "short" });
-                    document.getElementById("worstDay").textContent = new Date(
-                        worst.date,
-                    ).toLocaleDateString("en", { weekday: "short" });
-                }
-
-                // Total entries and streak
-                document.getElementById("totalEntries").textContent =
-                    entries.length;
-                let streak = 0;
-                let checkDate = new Date();
-                checkDate.setHours(0, 0, 0, 0);
-                while (true) {
-                    const dateStr = checkDate.toISOString().split("T")[0];
-                    const hasEntry = entries.some((e) => e.date === dateStr);
-                    if (hasEntry) {
-                        streak++;
-                        checkDate.setDate(checkDate.getDate() - 1);
-                    } else if (
-                        dateStr === new Date().toISOString().split("T")[0]
-                    ) {
-                        checkDate.setDate(checkDate.getDate() - 1);
-                    } else {
-                        break;
-                    }
-                }
-                document.getElementById("currentStreak").textContent = streak;
-
-                // Insights
-                const dayAverages = {};
-                for (let i = 0; i < 7; i++) {
-                    const dayEntries = entries.filter((e) => e.dayOfWeek === i);
-                    if (dayEntries.length > 0)
-                        dayAverages[i] =
-                            dayEntries.reduce(
-                                (sum, e) => sum + e.moodValue,
-                                0,
-                            ) / dayEntries.length;
-                }
-
-                let insights = [];
-                const weekendAvg = (dayAverages[0] + dayAverages[6]) / 2;
-                const weekdayAvg =
-                    (dayAverages[1] +
-                        dayAverages[2] +
-                        dayAverages[3] +
-                        dayAverages[4] +
-                        dayAverages[5]) /
-                    5;
-                if (weekendAvg > weekdayAvg + 0.3)
-                    insights.push("📊 Mood tends to be higher on weekends.");
-                if (weekdayAvg > weekendAvg + 0.3)
-                    insights.push("📊 Mood tends to be higher on weekdays.");
-                const trend =
-                    thisWeekAvg > (lastWeekAvg || thisWeekAvg)
-                        ? "improving"
-                        : thisWeekAvg < (lastWeekAvg || thisWeekAvg)
-                          ? "declining"
-                          : "stable";
-                if (trend === "improving")
-                    insights.push(
-                        "📈 Your mood is improving compared to last week.",
-                    );
-                if (trend === "declining")
-                    insights.push(
-                        "📉 Your mood is slightly lower than last week.",
-                    );
-                if (streak >= 7)
-                    insights.push(
-                        `🔥 Great job! You're on a ${streak}-day streak!`,
-                    );
-                document.getElementById("weekInsights").textContent =
-                    insights.join(" ") || "Keep tracking for more insights!";
-
-                // Trend chart
-                const trendChart = document.getElementById("trendChart");
-                trendChart.innerHTML = "";
-                for (let i = 6; i >= 0; i--) {
-                    const d = new Date(now);
-                    d.setDate(d.getDate() - i);
-                    const entry = entries.find(
-                        (e) => e.date === d.toISOString().split("T")[0],
-                    );
-                    const bar = document.createElement("div");
-                    bar.className = "trend-bar";
-                    bar.style.height = entry
-                        ? `${(entry.moodValue / 5) * 100}%`
-                        : "4px";
-                    bar.style.background = entry
-                        ? `hsl(${142 + (entry.moodValue - 1) * 20}, 76%, 36%)`
-                        : "hsl(var(--border))";
-                    bar.title = `${d.toLocaleDateString("en", { weekday: "short" })}: ${entry ? entry.moodValue + "/5" : "No data"}`;
-                    trendChart.appendChild(bar);
-                }
-
-                // Category averages
-                const catAverages = {};
-                const catNamesEn = {
-                    relationships: "💞 Relationships",
-                    stability: "🏛️ Stability",
-                    mental: "🧠 Mental",
-                    physical: "💪 Physical",
-                    meaning: "🎯 Meaning",
-                };
-                const catNamesId = {
-                    relationships: "💞 Hubungan",
-                    stability: "🏛️ Stabilitas",
-                    mental: "🧠 Mental",
-                    physical: "💪 Fisik",
-                    meaning: "🎯 Makna",
-                };
-                const catNames = currentLang === "id" ? catNamesId : catNamesEn;
-                entries.forEach((e) => {
-                    if (e.categories) {
-                        Object.entries(e.categories).forEach(([cat, subs]) => {
-                            if (!catAverages[cat]) catAverages[cat] = [];
-                            Object.values(subs).forEach((v) =>
-                                catAverages[cat].push(v),
-                            );
-                        });
-                    }
-                });
-                const catContainer =
-                    document.getElementById("categoryAverages");
-                catContainer.innerHTML = "";
-                Object.entries(catAverages).forEach(([cat, values]) => {
-                    const avg = (
-                        values.reduce((a, b) => a + b, 0) / values.length
-                    ).toFixed(1);
-                    const barWidth = (avg / 5) * 100;
-                    catContainer.innerHTML += `
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <span style="font-size: 0.75rem; min-width: 100px;">${catNames[cat] || cat}</span>
-                        <div style="flex: 1; height: 8px; background: hsl(var(--border)); border-radius: 4px; overflow: hidden;">
-                            <div style="width: ${barWidth}%; height: 100%; background: hsl(${142 + (avg - 1) * 20}, 76%, 36%); border-radius: 4px;"></div>
-                        </div>
-                        <span style="font-size: 0.75rem; min-width: 35px; text-align: right;">${avg}/5</span>
-                    </div>
-                `;
-                });
-
-                // Heatmap
-                const heatmap = document.getElementById("heatmap");
-                heatmap.innerHTML = "";
-                for (let i = 27; i >= 0; i--) {
-                    const d = new Date(now);
-                    d.setDate(d.getDate() - i);
-                    const entry = entries.find(
-                        (e) => e.date === d.toISOString().split("T")[0],
-                    );
-                    const cell = document.createElement("div");
-                    cell.className =
-                        "heatmap-cell" +
-                        (entry ? ` level-${entry.moodValue}` : " empty");
-                    cell.title = `${d.toLocaleDateString()}: ${entry ? entry.moodValue + "/5" : "No data"}`;
-                    heatmap.appendChild(cell);
-                }
-            }
-
-            // Breathing
-            document
-                .getElementById("startBreathing")
-                .addEventListener("click", () => {
-                    const circle = document.getElementById("breathingCircle");
-                    const text = document.getElementById("breathText");
-                    document.getElementById("startBreathing").disabled = true;
-                    document.getElementById("stopBreathing").disabled = false;
-                    App.breathCycles = 0;
-                    App.breathTime = 0;
-                    App.breathPhase = "inhale";
-
-                    // Start with inhale
-                    text.textContent = "Breathe In";
-                    circle.className = "breathing-circle inhale";
-                    App.breathCycles++;
-                    document.getElementById("breathCycles").textContent =
-                        App.breathCycles;
-
-                    App.breathingInterval = setInterval(() => {
-                        App.breathTime++;
-                        const mins = Math.floor(App.breathTime / 60);
-                        const secs = App.breathTime % 60;
-                        document.getElementById("breathTime").textContent =
-                            `${mins}:${secs.toString().padStart(2, "0")}`;
-
-                        if (App.breathPhase === "inhale") {
-                            // Switch to hold - stay at expanded position
-                            text.textContent = "Hold";
-                            circle.className = "breathing-circle hold";
-                            App.breathPhase = "hold";
-                        } else if (App.breathPhase === "hold") {
-                            // Switch to exhale - animate from expanded to normal
-                            text.textContent = "Breathe Out";
-                            circle.className = "breathing-circle exhale";
-                            App.breathPhase = "exhale";
-                        } else if (App.breathPhase === "exhale") {
-                            // Back to inhale
-                            text.textContent = "Breathe In";
-                            circle.className = "breathing-circle inhale";
-                            App.breathPhase = "inhale";
-                            App.breathCycles++;
-                            document.getElementById(
-                                "breathCycles",
-                            ).textContent = App.breathCycles;
-                        }
-                    }, 4000);
-                });
-
-            document
-                .getElementById("stopBreathing")
-                .addEventListener("click", () => {
-                    clearInterval(App.breathingInterval);
-                    const circle = document.getElementById("breathingCircle");
-                    const text = document.getElementById("breathText");
-                    document.getElementById("startBreathing").disabled = false;
-                    document.getElementById("stopBreathing").disabled = true;
-                    circle.className = "breathing-circle";
-                    text.textContent = "Ready";
-                });
-
-            // Gratitude
-            document
-                .getElementById("saveGratitude")
-                .addEventListener("click", () => {
-                    const entries = [
-                        document.getElementById("gratitude1").value.trim(),
-                        document.getElementById("gratitude2").value.trim(),
-                        document.getElementById("gratitude3").value.trim(),
-                    ].filter((e) => e);
-
-                    if (entries.length === 0) {
-                        showAlert("info", t("emptyEntry"), t("emptyEntryMsg"));
-                        return;
-                    }
-
-                    Store.gratitude.add({
-                        entries,
-                        timestamp: new Date().toISOString(),
-                    });
-                    showAlert(
-                        "success",
-                        t("gratitudeSaved"),
-                        t("gratitudeSavedMsg"),
-                    );
-                    document.getElementById("gratitude1").value = "";
-                    document.getElementById("gratitude2").value = "";
-                    document.getElementById("gratitude3").value = "";
-                    updateGratitudeCount();
-                    loadGratitudeList();
-                });
-
-            function updateGratitudeCount() {
-                const entries = Store.gratitude.getAll();
-                document.getElementById("gratitudeCount").textContent =
-                    `${entries.length} entrie${entries.length !== 1 ? "s" : ""}`;
-            }
-
-            function loadGratitudeList() {
-                const entries = Store.gratitude.getAll();
-                const list = document.getElementById("gratitudeList");
-                list.innerHTML = "";
-                entries
-                    .slice(-5)
-                    .reverse()
-                    .forEach((entry) => {
-                        const div = document.createElement("div");
-                        div.className = "gratitude-item";
-                        div.textContent =
-                            new Date(entry.timestamp).toLocaleDateString() +
-                            ": " +
-                            entry.entries.join(", ");
-                        list.appendChild(div);
-                    });
-            }
-
-            // Quick Relax with timer and sound
-            let relaxInterval = null;
-            let relaxTime = 60;
-            let relaxSoundInterval = null;
-
-            function playRelaxSound() {
-                initAudio();
-                // Play a gentle "tit" sound
-                const osc = App.audioCtx.createOscillator();
-                const gain = App.audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(App.audioCtx.destination);
-                osc.frequency.value = 880;
-                osc.type = "sine";
-                gain.gain.setValueAtTime(0.15, App.audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(
-                    0.01,
-                    App.audioCtx.currentTime + 0.3,
-                );
-                osc.start(App.audioCtx.currentTime);
-                osc.stop(App.audioCtx.currentTime + 0.3);
-            }
-
-            document
-                .getElementById("startRelax")
-                .addEventListener("click", () => {
-                    initAudio();
-                    document.getElementById("startRelax").disabled = true;
-                    document.getElementById("stopRelax").disabled = false;
-                    relaxTime = 60;
-                    document.getElementById("relaxTimer").textContent = "1:00";
-
-                    // Play sound every 4 seconds
-                    relaxSoundInterval = setInterval(() => {
-                        if (relaxTime > 0) playRelaxSound();
-                    }, 4000);
-
-                    relaxInterval = setInterval(() => {
-                        relaxTime--;
-                        const mins = Math.floor(relaxTime / 60);
-                        const secs = relaxTime % 60;
-                        document.getElementById("relaxTimer").textContent =
-                            `${mins}:${secs.toString().padStart(2, "0")}`;
-
-                        if (relaxTime <= 0) {
-                            clearInterval(relaxInterval);
-                            clearInterval(relaxSoundInterval);
-                            document.getElementById("startRelax").disabled =
-                                false;
-                            document.getElementById("stopRelax").disabled =
-                                true;
-                            playRelaxSound();
-                            setTimeout(() => playRelaxSound(), 200);
-                            setTimeout(() => playRelaxSound(), 400);
-                            showAlert(
-                                "info",
-                                t("relaxationComplete"),
-                                t("relaxationCompleteMsg"),
-                            );
-                        }
-                    }, 1000);
-                });
-
-            document
-                .getElementById("stopRelax")
-                .addEventListener("click", () => {
-                    clearInterval(relaxInterval);
-                    clearInterval(relaxSoundInterval);
-                    document.getElementById("startRelax").disabled = false;
-                    document.getElementById("stopRelax").disabled = true;
-                    relaxTime = 60;
-                    document.getElementById("relaxTimer").textContent = "1:00";
-                });
-
-            // Timer
-            const timerTime = document.getElementById("timerTime");
-            const timerLabel = document.getElementById("timerLabel");
-            const timerToggle = document.getElementById("timerToggle");
-            const timerReset = document.getElementById("timerReset");
-            const timerProgress = document.getElementById("timerProgress");
-            const alarmModal = document.getElementById("alarmModal");
-
-            function formatTime(secs) {
-                const m = Math.floor(secs / 60)
-                    .toString()
-                    .padStart(2, "0");
-                const s = (secs % 60).toString().padStart(2, "0");
-                return m + ":" + s;
-            }
-
-            function updateTimerDisplay() {
-                timerTime.textContent = formatTime(App.timeLeft);
-                const pct =
-                    ((App.totalTime - App.timeLeft) / App.totalTime) * 100;
-                timerProgress.style.width = pct + "%";
-            }
-
-            function switchMode(mins) {
-                App.currentMode = mins;
-                App.totalTime = mins * 60;
-                App.timeLeft = App.totalTime;
-                App.isRunning = false;
-                clearInterval(App.timerInterval);
-                timerToggle.innerHTML = "▶ Start";
-                document
-                    .querySelectorAll(".timer-modes .btn")
-                    .forEach((btn) => {
-                        btn.classList.toggle(
-                            "active",
-                            parseInt(btn.dataset.mode) === mins,
-                        );
-                    });
-                timerLabel.textContent = {
-                    25: "Focus Time",
-                    5: "Short Break",
-                    15: "Long Break",
-                }[mins];
-                updateTimerDisplay();
-            }
-
-            document.querySelectorAll(".timer-modes .btn").forEach((btn) => {
-                btn.addEventListener("click", () =>
-                    switchMode(parseInt(btn.dataset.mode)),
-                );
-            });
-
-            function initAudio() {
-                if (!App.audioCtx)
-                    App.audioCtx = new (
-                        window.AudioContext || window.webkitAudioContext
-                    )();
-            }
-
-            function playTone(freq, type, duration, startTime = 0) {
-                const osc = App.audioCtx.createOscillator();
-                const gain = App.audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(App.audioCtx.destination);
-                osc.frequency.value = freq;
-                osc.type = type;
-                gain.gain.setValueAtTime(
-                    0.2,
-                    App.audioCtx.currentTime + startTime,
-                );
-                gain.gain.exponentialRampToValueAtTime(
-                    0.01,
-                    App.audioCtx.currentTime + startTime + duration,
-                );
-                osc.start(App.audioCtx.currentTime + startTime);
-                osc.stop(App.audioCtx.currentTime + startTime + duration);
-            }
-
-            function playAlarm() {
-                initAudio();
-                const sounds = {
-                    digital: () => {
-                        [0, 0.15, 0.3, 0.45, 0.6, 0.75].forEach((t, i) =>
-                            playTone(880 + i * 100, "square", 0.1, t),
-                        );
-                    },
-                    chime: () => {
-                        [523, 659, 784, 1047].forEach((f, i) =>
-                            playTone(f, "sine", 0.4, i * 0.15),
-                        );
-                    },
-                    bell: () => {
-                        [392, 523, 784].forEach((f, i) =>
-                            playTone(f, "triangle", 0.5, i * 0.2),
-                        );
-                    },
-                };
-                sounds[App.alarmSound]();
-            }
-
-            let alarmLoop;
-            function startAlarmLoop() {
-                playAlarm();
-                alarmLoop = setInterval(playAlarm, 1500);
-            }
-            function stopAlarmLoop() {
-                if (alarmLoop) {
-                    clearInterval(alarmLoop);
-                    alarmLoop = null;
-                }
-            }
-
-            timerToggle.addEventListener("click", () => {
-                initAudio();
-                if (App.isRunning) {
-                    clearInterval(App.timerInterval);
-                    timerToggle.innerHTML = "▶ Start";
-                    App.isRunning = false;
-                } else {
-                    timerToggle.innerHTML = "⏸ Pause";
-                    App.timerInterval = setInterval(() => {
-                        App.timeLeft--;
-                        updateTimerDisplay();
-                        if (App.timeLeft <= 0) {
-                            clearInterval(App.timerInterval);
-                            App.isRunning = false;
-                            timerToggle.innerHTML = "▶ Start";
-                            if (App.soundEnabled) startAlarmLoop();
-                            alarmModal.classList.add("active");
-                            if (App.notifyEnabled)
-                                new Notification(t("timesUp"), {
-                                    body:
-                                        App.currentMode === 25
-                                            ? t("focusComplete")
-                                            : t("breakOver"),
-                                });
-                            Store.pomodoro.add({
-                                duration: App.currentMode,
-                                date: new Date().toISOString(),
-                            });
-                            App.timeLeft = App.totalTime;
-                            updateTimerDisplay();
-                        }
-                    }, 1000);
-                    App.isRunning = true;
-                }
-            });
-
-            timerReset.addEventListener("click", () => {
-                clearInterval(App.timerInterval);
-                App.isRunning = false;
-                timerToggle.innerHTML = "▶ Start";
-                App.timeLeft = App.totalTime;
-                updateTimerDisplay();
-            });
-
-            document
-                .getElementById("stopAlarm")
-                .addEventListener("click", () => {
-                    alarmModal.classList.remove("active");
-                    stopAlarmLoop();
-                });
-            document
-                .getElementById("snoozeAlarm")
-                .addEventListener("click", () => {
-                    alarmModal.classList.remove("active");
-                    stopAlarmLoop();
-                    switchMode(5);
-                });
-
-            // Tasks
-            let todos = Store.get("todos", []);
-            function saveTodos() {
-                Store.set("todos", todos);
-                renderTodos();
-            }
-            function renderTodos() {
-                const list = document.getElementById("todoList");
-                list.innerHTML = "";
-                todos.forEach((todo, i) => {
-                    const li = document.createElement("li");
-                    li.className = todo.completed ? "completed" : "";
-                    li.innerHTML = `<span onclick="toggleTodo(${i})" style="cursor:pointer;flex:1">${escapeHtml(todo.text)}</span><button class="btn btn-destructive btn-sm" onclick="deleteTodo(${i})">✕</button>`;
-                    list.appendChild(li);
-                });
-                document.getElementById("taskCount").textContent =
-                    `${todos.filter((t) => !t.completed).length}/${todos.length}`;
-            }
-            function escapeHtml(text) {
-                const div = document.createElement("div");
-                div.textContent = text;
-                return div.innerHTML;
-            }
-            window.addTodo = () => {
-                const input = document.getElementById("todoInput");
-                const text = input.value.trim();
-                if (text) {
-                    todos.push({ text, completed: false });
-                    input.value = "";
-                    saveTodos();
-                }
-            };
-            window.toggleTodo = (i) => {
-                todos[i].completed = !todos[i].completed;
-                saveTodos();
-            };
-            window.deleteTodo = (i) => {
-                todos.splice(i, 1);
-                saveTodos();
-            };
-            document
-                .getElementById("addBtn")
-                .addEventListener("click", addTodo);
-            document
-                .getElementById("todoInput")
-                .addEventListener("keypress", (e) => {
-                    if (e.key === "Enter") addTodo();
-                });
-            document
-                .getElementById("clearCompleted")
-                .addEventListener("click", () => {
-                    todos = todos.filter((t) => !t.completed);
-                    saveTodos();
-                });
-            document
-                .getElementById("clearAll")
-                .addEventListener("click", () => {
-                    if (confirm(t("deleteTasks"))) {
-                        todos = [];
-                        saveTodos();
-                    }
-                });
-
-            // Settings
-            function updateToggle(id, enabled) {
-                document.getElementById(id).classList.toggle("active", enabled);
-            }
-            updateToggle("soundToggle", App.soundEnabled);
-            updateToggle("notifyToggle", App.notifyEnabled);
-            document.getElementById("alarmSound").value = App.alarmSound;
-
-            document
-                .getElementById("soundToggle")
-                .addEventListener("click", () => {
-                    App.soundEnabled = !App.soundEnabled;
-                    localStorage.setItem("soundEnabled", App.soundEnabled);
-                    updateToggle("soundToggle", App.soundEnabled);
-                });
-            document
-                .getElementById("notifyToggle")
-                .addEventListener("click", async () => {
-                    App.notifyEnabled = !App.notifyEnabled;
-                    localStorage.setItem("notifyEnabled", App.notifyEnabled);
-                    updateToggle("notifyToggle", App.notifyEnabled);
-                    if (App.notifyEnabled)
-                        await Notification.requestPermission();
-                });
-            document
-                .getElementById("alarmSound")
-                .addEventListener("change", function () {
-                    App.alarmSound = this.value;
-                    localStorage.setItem("alarmSound", this.value);
-                    initAudio();
-                    playAlarm();
-                });
-
-            document
-                .getElementById("exportData")
-                .addEventListener("click", () => {
-                    const exportData = {
-                        moods: Store.mood.getAll(),
-                        pomodoro: Store.pomodoro.getAll(),
-                        gratitude: Store.gratitude.getAll(),
-                        todos,
-                        settings: {
-                            theme: App.theme,
-                            colorScheme: App.colorScheme,
-                            language: currentLang,
-                        },
-                    };
-                    const blob = new Blob(
-                        [JSON.stringify(exportData, null, 2)],
-                        { type: "application/json" },
-                    );
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `focus-backup-${getTodayKey()}.json`;
-                    a.click();
-                    showAlert(
-                        "success",
-                        t("exportSuccess"),
-                        t("exportSuccessMsg"),
-                    );
-                });
-
-            document
-                .getElementById("resetAll")
-                .addEventListener("click", () => {
-                    showAlert(
-                        "warning",
-                        t("resetConfirm"),
-                        t("resetConfirmMsg"),
-                        () => {
-                            localStorage.clear();
-                            showAlert(
-                                "success",
-                                t("resetComplete"),
-                                t("resetCompleteMsg"),
-                            );
-                            setTimeout(() => location.reload(), 1500);
-                        },
-                    );
-                });
-
-            function showAlert(type, title, message, callback) {
-                const modal = document.getElementById("alertModal");
-                document.getElementById("alertIcon").textContent =
-                    { success: "✅", error: "❌", warning: "⚠️", info: "ℹ️" }[
-                        type
-                    ] || "ℹ️";
-                document.getElementById("alertTitle").textContent = title;
-                document.getElementById("alertMessage").textContent = message;
-                modal.classList.add("active");
-                document.getElementById("alertOk").onclick = () => {
-                    modal.classList.remove("active");
-                    if (callback) callback();
-                };
-            }
-        </script>
+        <div id="alarmModal" class="modal-overlay">
+            <div class="modal">
+                <div class="modal-icon">⏰</div>
+                <div class="modal-title" data-i18n="timesUp">Time's up!</div>
+                <div class="modal-message" id="alarmMessage">Focus session complete!</div>
+                <div class="modal-buttons">
+                    <button id="stopAlarm" class="btn btn-primary" data-i18n="stopAlarm">Stop</button>
+                    <button id="snoozeAlarm" class="btn btn-secondary" data-i18n="snoozeAlarm">Snooze (5 min)</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="app.js"></script>
     </body>
 </html>

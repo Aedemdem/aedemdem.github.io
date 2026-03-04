@@ -1,0 +1,17 @@
+<!-- Placeholder for mood-animation.gif -->
+<!-- Replace this file with your own animated GIF (recommended size: 400x60px or similar aspect ratio) -->
+<!-- You can create mood-related animations showing different emotions -->
+
+<!-- Temporary SVG Placeholder -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 60">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="60" fill="url(#bg)" rx="8"/>
+  <text x="200" y="35" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle" font-weight="500">
+    📊 Add your mood-animation.gif here (400x60px recommended)
+  </text>
+</svg>
