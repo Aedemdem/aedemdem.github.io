@@ -318,7 +318,7 @@
         <span class="popup-price">Rp50.000</span>
       </div>
       <button class="popup-btn" id="popupPayBtn">Bayar Sekarang via DANA →</button>
-      <div class="popup-timer">Otomatis diarahkan dalam <span id="timerCount">3</span> detik…</div>
+      <div class="popup-timer">Otomatis diarahkan dalam <span id="timerCount">6</span> detik…</div>
     </div>
   </div>
 
@@ -612,7 +612,7 @@
 
   function showPopup() {
     popup.classList.add('show');
-    let t = 3;
+    let t = 6;
     timerCount.textContent = t;
     const iv = setInterval(() => {
       t--;
