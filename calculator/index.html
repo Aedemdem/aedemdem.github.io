@@ -340,7 +340,7 @@
       <div class="buttons" id="btnGrid">
         <!-- Row 1 -->
         <button class="btn clr"  data-action="clear">AC</button>
-        <button class="btn op"   data-action="sign">+/-</button>
+        <button class="btn clr"  data-action="back">⌫</button>
         <button class="btn pct"  data-action="percent">%</button>
         <button class="btn op"   data-action="op" data-val="/">÷</button>
         <!-- Row 2 -->
@@ -368,20 +368,27 @@
 
 <script>
 (function () {
-  /* ─── STATE ─── */
-  let display    = '0';
-  let expression = '';
-  let operator   = null;
-  let operand1   = null;
-  let freshResult = false;
+  /* ══════════════════════════════════════════
+     STATE
+  ══════════════════════════════════════════ */
+  let display     = '0';
+  let operator    = null;
+  let operand1    = null;
+  let freshResult = false;   // true after operator press OR after = result
 
-  /* ─── PRANK STATE ─── */
-  let isMobile   = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-  let attempts   = 0;
-  const MAX_ATT  = 5;
-  let prankDone  = false;
+  /* ══════════════════════════════════════════
+     PRANK STATE
+     - No isMobile gate: prank works on all devices
+     - attempts counted per = press (up to MAX_ATT moves)
+     - On (MAX_ATT+1)th press → show popup, then restore
+  ══════════════════════════════════════════ */
+  let attempts  = 0;
+  const MAX_ATT = 5;
+  let prankDone = false;
 
-  /* ─── DOM ─── */
+  /* ══════════════════════════════════════════
+     DOM REFS
+  ══════════════════════════════════════════ */
   const resultEl     = document.getElementById('result');
   const expressionEl = document.getElementById('expression');
   const eqBtn        = document.getElementById('eqBtn');
@@ -389,20 +396,27 @@
   const timerCount   = document.getElementById('timerCount');
   const popupPayBtn  = document.getElementById('popupPayBtn');
 
-  /* ─── UPDATE DISPLAY ─── */
+  /* ══════════════════════════════════════════
+     DISPLAY HELPER
+  ══════════════════════════════════════════ */
   function updateDisplay(val) {
-    const fmt = parseFloat(val);
-    if (!isNaN(fmt) && isFinite(fmt)) {
-      const s = String(fmt);
-      resultEl.textContent = s.length > 12 ? parseFloat(fmt.toPrecision(8)).toString() : s;
+    const num = parseFloat(val);
+    if (!isNaN(num) && isFinite(num)) {
+      const s = String(num);
+      resultEl.textContent = s.length > 12
+        ? parseFloat(num.toPrecision(8)).toString()
+        : s;
     } else {
-      resultEl.textContent = val;
+      resultEl.textContent = val; // 'Error' etc.
     }
   }
 
-  /* ─── CORE CALC ─── */
+  /* ══════════════════════════════════════════
+     CORE CALCULATOR LOGIC
+  ══════════════════════════════════════════ */
   function calculate(a, b, op) {
-    a = parseFloat(a); b = parseFloat(b);
+    a = parseFloat(a);
+    b = parseFloat(b);
     switch (op) {
       case '+': return a + b;
       case '-': return a - b;
@@ -412,148 +426,167 @@
   }
 
   function doEquals() {
-    if (operator && operand1 !== null) {
-      const b = parseFloat(display);
+    if (operator !== null && operand1 !== null) {
+      const b   = parseFloat(display);
       const res = calculate(operand1, b, operator);
       expressionEl.textContent = `${operand1} ${operator} ${b} =`;
       display = String(res);
       updateDisplay(display);
-      operator = null;
-      operand1 = null;
+      operator    = null;
+      operand1    = null;
       freshResult = true;
     }
   }
 
   function handleAction(action, val) {
     switch (action) {
+
+      /* ── Numbers ── */
       case 'num':
-        if (freshResult) { display = val; freshResult = false; }
-        else display = display === '0' ? val : display + val;
+        if (freshResult) {
+          display     = val;
+          freshResult = false;
+          expressionEl.textContent = '';
+        } else {
+          display = (display === '0') ? val : display + val;
+        }
         updateDisplay(display);
-        expressionEl.textContent = '';
         break;
 
+      /* ── Decimal dot ── */
       case 'dot':
         if (freshResult) { display = '0.'; freshResult = false; }
         else if (!display.includes('.')) display += '.';
         updateDisplay(display);
         break;
 
+      /* ── Operators (+, -, *, /) ──
+         BUG FIX #1: must set freshResult = true so the NEXT
+         number input starts a brand-new operand, not appended. */
       case 'op':
-        if (operator && !freshResult) {
+        if (operator !== null && !freshResult) {
+          // Chain operation: compute running total first
           const res = calculate(operand1, parseFloat(display), operator);
           display = String(res);
           updateDisplay(display);
         }
-        operand1 = parseFloat(display);
-        operator = val;
-        freshResult = false;
+        operand1    = parseFloat(display);
+        operator    = val;
+        freshResult = true;   // ← THE CRITICAL FIX (was false before)
         expressionEl.textContent = `${operand1} ${val}`;
         break;
 
+      /* ── AC (All Clear) ── */
       case 'clear':
-        display = '0'; expression = ''; operator = null;
-        operand1 = null; freshResult = false;
+        display     = '0';
+        operator    = null;
+        operand1    = null;
+        freshResult = false;
         updateDisplay(display);
         expressionEl.textContent = '';
         break;
 
-      case 'sign':
-        display = String(parseFloat(display) * -1);
+      /* ── ⌫ (Backspace) ── BUG FIX #2: new action */
+      case 'back':
+        if (freshResult) {
+          // After a result, backspace resets to 0
+          display     = '0';
+          freshResult = false;
+        } else {
+          display = display.length > 1 ? display.slice(0, -1) : '0';
+        }
         updateDisplay(display);
         break;
 
+      /* ── Percent ── */
       case 'percent':
         display = String(parseFloat(display) / 100);
         updateDisplay(display);
         break;
-
-      case 'equals':
-        doEquals();
-        break;
     }
   }
 
-  /* ─── BUTTON CLICK ─── */
+  /* ══════════════════════════════════════════
+     GRID CLICK DELEGATION
+     BUG FIX #3a: equals button is EXCLUDED here.
+     It has its own direct listener (see below) so
+     delegation still works after the button moves to <body>.
+  ══════════════════════════════════════════ */
   document.getElementById('btnGrid').addEventListener('click', function (e) {
     const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const action = btn.dataset.action;
-    const val    = btn.dataset.val || '';
-
-    if (action === 'equals') {
-      handleEqualsPress(e);
-    } else {
-      handleAction(action, val);
-    }
+    if (!btn || btn.dataset.action === 'equals') return; // equals handled separately
+    handleAction(btn.dataset.action, btn.dataset.val || '');
   });
 
-  /* ─── KEYBOARD ─── */
+  /* ══════════════════════════════════════════
+     EQUALS — direct listener on the button element
+     BUG FIX #3b: because eqBtn is reparented to <body>
+     during the prank, event delegation from #btnGrid breaks.
+     A listener attached to the element itself travels with it.
+  ══════════════════════════════════════════ */
+  eqBtn.addEventListener('click', function () {
+    handleEqualsPress();
+  });
+
+  /* ══════════════════════════════════════════
+     KEYBOARD SUPPORT
+  ══════════════════════════════════════════ */
   document.addEventListener('keydown', function (e) {
-    const map = {
-      '0':'0','1':'1','2':'2','3':'3','4':'4',
-      '5':'5','6':'6','7':'7','8':'8','9':'9',
-      '.':'.', ',':'.',
-      '+':'+', '-':'-', '*':'*', '/':'/',
-      'Enter':'equals', '=':'equals',
-      'Backspace':'back', 'Escape':'clear', '%':'percent'
-    };
-    const act = map[e.key];
-    if (!act) return;
-    if (act === 'equals') { handleEqualsPress(null); return; }
-    if (act === 'back') {
-      if (display.length > 1) display = display.slice(0, -1);
-      else display = '0';
-      updateDisplay(display);
-      return;
-    }
-    if ('0123456789'.includes(act)) { handleAction('num', act); return; }
-    if (act === '.') { handleAction('dot', ''); return; }
-    if (['+','-','*','/'].includes(act)) { handleAction('op', act); return; }
-    if (act === 'clear') { handleAction('clear', ''); return; }
-    if (act === 'percent') { handleAction('percent', ''); return; }
+    if (e.key === 'Enter' || e.key === '=') { handleEqualsPress(); return; }
+    if (e.key === 'Backspace') { handleAction('back', ''); return; }
+    if (e.key === 'Escape')    { handleAction('clear', ''); return; }
+    if (e.key === '%')         { handleAction('percent', ''); return; }
+    if (e.key === '.')         { handleAction('dot', ''); return; }
+    if ('0123456789'.includes(e.key)) { handleAction('num', e.key); return; }
+    if (['+', '-', '*', '/'].includes(e.key)) { handleAction('op', e.key); return; }
   });
 
-  /* ─── PRANK: MOVE EQUALS ─── */
-  function getEqRect() { return eqBtn.getBoundingClientRect(); }
-
-  function randomPos(btnW, btnH) {
-    const margin = 20;
-    const maxX = window.innerWidth  - btnW - margin;
-    const maxY = window.innerHeight - btnH - margin;
-    return {
-      x: Math.floor(Math.random() * (maxX - margin)) + margin,
-      y: Math.floor(Math.random() * (maxY - margin)) + margin
-    };
-  }
-
+  /* ══════════════════════════════════════════
+     PRANK — MOVE EQUALS BUTTON
+  ══════════════════════════════════════════ */
   function makeEqFloat() {
-    const r = getEqRect();
+    const r = eqBtn.getBoundingClientRect();
+    // Freeze current size/position before reparenting
     eqBtn.style.width  = r.width  + 'px';
     eqBtn.style.height = r.height + 'px';
     eqBtn.style.left   = r.left   + 'px';
     eqBtn.style.top    = r.top    + 'px';
     eqBtn.classList.add('floating');
-    // Placeholder to keep grid layout
+
+    // Leave an invisible placeholder so the grid layout doesn't collapse
     if (!document.getElementById('eqPlaceholder')) {
       const ph = document.createElement('div');
       ph.id = 'eqPlaceholder';
-      ph.style.cssText = `width:${r.width}px;height:${r.height}px;visibility:hidden;`;
+      ph.style.cssText =
+        `width:${r.width}px;height:${r.height}px;visibility:hidden;grid-column:auto;`;
       eqBtn.parentNode.insertBefore(ph, eqBtn);
     }
+    // Move button to <body> — the direct listener on eqBtn travels with it
     document.body.appendChild(eqBtn);
+  }
+
+  function randomPos() {
+    const margin = 24;
+    const w = eqBtn.offsetWidth  || 68;
+    const h = eqBtn.offsetHeight || 68;
+    const maxX = window.innerWidth  - w - margin;
+    const maxY = window.innerHeight - h - margin;
+    return {
+      x: Math.max(margin, Math.floor(Math.random() * maxX)),
+      y: Math.max(margin, Math.floor(Math.random() * maxY))
+    };
   }
 
   function moveEqualsAway() {
     if (!eqBtn.classList.contains('floating')) makeEqFloat();
-    const pos = randomPos(eqBtn.offsetWidth, eqBtn.offsetHeight);
+    const pos = randomPos();
     eqBtn.style.left = pos.x + 'px';
     eqBtn.style.top  = pos.y + 'px';
-    // ripple shake on result
+    // Visual feedback: shake the display
     resultEl.classList.remove('shake');
-    void resultEl.offsetWidth;
+    void resultEl.offsetWidth; // force reflow to restart animation
     resultEl.classList.add('shake');
-    setTimeout(() => resultEl.classList.remove('shake'), 300);
+    setTimeout(() => resultEl.classList.remove('shake'), 350);
   }
 
   function restoreEquals() {
@@ -563,25 +596,29 @@
       ph.remove();
     }
     eqBtn.classList.remove('floating');
-    eqBtn.style.cssText = '';
-    eqBtn.style.transition = '';
+    eqBtn.removeAttribute('style');
   }
 
-  /* ─── POPUP ─── */
+  /* ══════════════════════════════════════════
+     POPUP + DANA REDIRECT
+  ══════════════════════════════════════════ */
   function openDANA() {
-    const intentUrl = 'intent://#Intent;scheme=dana;package=id.dana;S.browser_fallback_url=https://dana.id;end';
-    window.location.href = intentUrl;
+    // Format Intent resmi DANA dengan Fallback ke Play Store jika aplikasi tidak ada
+    var danaIntent = "intent://m.dana.id/#Intent;scheme=https;package=id.dana;S.browser_fallback_url=https%3A%2F%google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Did.dana;end;";
+    
+    // Melakukan pengalihan lokasi halaman
+    window.location.href = danaIntent;
   }
 
   function showPopup() {
     popup.classList.add('show');
     let t = 3;
     timerCount.textContent = t;
-    const interval = setInterval(() => {
+    const iv = setInterval(() => {
       t--;
       timerCount.textContent = t;
       if (t <= 0) {
-        clearInterval(interval);
+        clearInterval(iv);
         openDANA();
         setTimeout(() => {
           popup.classList.remove('show');
@@ -599,24 +636,31 @@
     prankDone = true;
   });
 
-  /* ─── EQUALS HANDLER ─── */
-  function handleEqualsPress(e) {
-    if (!prankDone && isMobile) {
-      attempts++;
-      if (attempts <= MAX_ATT) {
-        moveEqualsAway();
-        return; // don't calculate yet
-      } else {
-        // 5 attempts exhausted
-        showPopup();
-        return;
-      }
+  /* ══════════════════════════════════════════
+     EQUALS PRESS HANDLER
+     Flow:
+       attempts 1–5  → move button away (no calculation)
+       attempt  6    → show popup (redirect after 3 s)
+       after popup   → prankDone = true → normal behaviour
+  ══════════════════════════════════════════ */
+  function handleEqualsPress() {
+    if (prankDone) {
+      doEquals();
+      return;
     }
-    // Normal equals
-    doEquals();
+    attempts++;
+    if (attempts <= MAX_ATT) {
+      moveEqualsAway();
+      // Do NOT calculate — user must catch the button first!
+    } else {
+      // 6th press: prank complete → show popup
+      showPopup();
+    }
   }
 
-  /* ─── INIT ─── */
+  /* ══════════════════════════════════════════
+     INIT
+  ══════════════════════════════════════════ */
   updateDisplay('0');
 })();
 </script>
